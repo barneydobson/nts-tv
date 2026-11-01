@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">NTS Radio</string>
+    <string name="brand" translatable="false">NTS</string>
+    <string name="brand_sub">LIVE RADIO</string>
+    <string name="live">LIVE</string>
+    <string name="next">Next</string>
+    <string name="channel_fallback_title">NTS %1$s</string>
+    <string name="mixtapes_heading">Infinite Mixtapes</string>
+    <string name="mixtapes_loading">Loading mixtapes…</string>
+    <string name="mixtapes_unavailable">Couldn\'t load mixtapes. Retrying…</string>
+
+    <string name="now_playing">Now playing</string>
+    <string name="tuning_in">Tuning in</string>
+    <string name="paused">Paused</string>
+    <string name="reconnecting">Reconnecting</string>
+    <string name="now_playing_line">%1$s · %2$s</string>
+
+    <string name="status_listen">Press OK to listen</string>
+    <string name="status_playing">Playing · press OK to pause</string>
+    <string name="status_buffering">Tuning in…</string>
+    <string name="status_paused">Paused · press OK to resume</string>
+    <string name="status_error">Connection lost · press OK to retry</string>
+
+    <string name="badge_playing">PLAYING</string>
+    <string name="badge_buffering">TUNING IN</string>
+    <string name="badge_paused">PAUSED</string>
+    <string name="badge_error">OFFLINE</string>
+
+    <string name="footer">Unofficial app · not affiliated with NTS · v%1$s</string>
+</resources>
