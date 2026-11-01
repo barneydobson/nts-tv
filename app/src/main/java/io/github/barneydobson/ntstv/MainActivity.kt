@@ -282,6 +282,9 @@ class MainActivity : ComponentActivity() {
         private val meta: TextView = root.findViewById(R.id.meta)
         private val title: TextView = root.findViewById(R.id.title)
         private val genres: TextView = root.findViewById(R.id.genres)
+        private val progressRow: View = root.findViewById(R.id.progress_row)
+        private val startTime: TextView = root.findViewById(R.id.start_time)
+        private val endTime: TextView = root.findViewById(R.id.end_time)
         private val progress: ProgressBar = root.findViewById(R.id.progress)
         private val next: TextView = root.findViewById(R.id.next)
         private val status: TextView = root.findViewById(R.id.status)
@@ -312,19 +315,18 @@ class MainActivity : ComponentActivity() {
 
             title.text = show?.title ?: getString(R.string.channel_fallback_title, channel)
 
-            val times = if (show?.start != null && show.end != null) {
-                "${formatTime(show.start)}–${formatTime(show.end)}"
-            } else {
-                null
-            }
-            meta.text = listOfNotNull(show?.location, times).joinToString(" · ")
+            meta.text = show?.location.orEmpty()
 
             genres.text = show?.genres.orEmpty().take(3).joinToString(" · ")
             genres.isVisible = genres.text.isNotEmpty()
 
             val fraction = showProgress(show)
-            progress.isVisible = fraction != null
-            progress.progress = ((fraction ?: 0f) * 1000).toInt()
+            progressRow.isVisible = fraction != null
+            if (show?.start != null && show.end != null && fraction != null) {
+                startTime.text = formatTime(show.start)
+                endTime.text = formatTime(show.end)
+                progress.progress = (fraction * 1000).toInt()
+            }
 
             val upNext = data?.next
             next.text = upNext?.let {
