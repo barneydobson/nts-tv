@@ -75,12 +75,8 @@ Without signing secrets, the APK at `app/build/outputs/apk/release/app-release.a
 
 1. Builds a release APK.
 2. Smoke-tests it on an Android TV emulator: it launches the app, tunes in to NTS 1, switches to a mixtape, pauses, and checks that playback carries on in the background. Screenshots and logs are uploaded as the `smoke-test-output` artifact, and the latest results from `main` are also kept on the [`smoke-test-results`](https://github.com/barneydobson/nts-tv/tree/smoke-test-results) branch.
-3. On a `v*` tag, publishes a GitHub release with `nts-tv.apk` attached.
+3. Publishes a GitHub release with `nts-tv.apk` attached when `main` has a `version.txt` that hasn't been released yet, or when a `v*` tag is pushed.
 
 Release builds are signed with a key stored in two repository secrets: `SIGNING_KEYSTORE_BASE64` (the base64-encoded PKCS12 keystore) and `SIGNING_STORE_PASSWORD`. The key alias defaults to `ntstv`; override it with `SIGNING_KEY_ALIAS` and `SIGNING_KEY_PASSWORD` if needed. Keep the same key forever, or existing installs won't accept updates.
 
-To cut a release:
-
-```bash
-git tag v1.0.1 && git push origin v1.0.1
-```
+To cut a release, bump the version in [`version.txt`](version.txt) and push to `main`. CI tags the commit and publishes the release once the smoke test passes. Pushing a `v*` tag yourself works too.
