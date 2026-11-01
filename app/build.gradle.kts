@@ -25,10 +25,11 @@ android {
     signingConfigs {
         if (keystorePath != null) {
             create("release") {
+                val storePass = System.getenv("SIGNING_STORE_PASSWORD")
                 storeFile = file(keystorePath)
-                storePassword = System.getenv("SIGNING_STORE_PASSWORD")
-                keyAlias = System.getenv("SIGNING_KEY_ALIAS")
-                keyPassword = System.getenv("SIGNING_KEY_PASSWORD")
+                storePassword = storePass
+                keyAlias = System.getenv("SIGNING_KEY_ALIAS")?.ifBlank { null } ?: "ntstv"
+                keyPassword = System.getenv("SIGNING_KEY_PASSWORD")?.ifBlank { null } ?: storePass
             }
         }
     }

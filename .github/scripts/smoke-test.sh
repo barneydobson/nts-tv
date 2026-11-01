@@ -34,7 +34,12 @@ wait_for_state() { # wait_for_state <code> <seconds>
 
 check() { # check <description> <command...>
   local what="$1"; shift
-  if "$@"; then log "PASS: $what"; else log "FAIL: $what"; failures=$((failures + 1)); fi
+  if "$@"; then
+    echo "::notice title=Smoke test::PASS: $what"
+  else
+    echo "::error title=Smoke test::FAIL: $what"
+    failures=$((failures + 1))
+  fi
 }
 
 adb shell getprop ro.build.version.release
@@ -85,7 +90,7 @@ shot 6-home-screen
 adb logcat -d > "$OUT/logcat.txt"
 check "App process is alive" adb shell pidof "$PKG"
 if grep -A 20 "FATAL EXCEPTION" "$OUT/logcat.txt" | grep -q "$PKG"; then
-  log "FAIL: app crashed"
+  echo "::error title=Smoke test::FAIL: app crashed: $(grep -A 3 'FATAL EXCEPTION' "$OUT/logcat.txt" | tr '\n' ' ' | cut -c1-400)"
   grep -A 30 "FATAL EXCEPTION" "$OUT/logcat.txt"
   failures=$((failures + 1))
 fi
