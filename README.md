@@ -2,6 +2,8 @@
 
 An unofficial player for [NTS Radio](https://www.nts.live), the London-based online radio station, built for the TV. It works on **Chromecast with Google TV**, **Google TV Streamer** and other Android TV devices.
 
+![NTS Radio on Google TV: NTS 1 and NTS 2 live cards above a row of Infinite Mixtapes](docs/screenshot.jpg)
+
 - **NTS 1 and NTS 2 live**, with the current show, where it's broadcasting from, its genres, how far through it is and what's on next.
 - **Infinite Mixtapes**: every NTS mixtape stream, in a row underneath.
 - **Remote-friendly**: move with the arrows and press **OK** to listen. Press OK again on the playing station to pause or resume.
@@ -72,7 +74,7 @@ Without signing secrets, the APK at `app/build/outputs/apk/release/app-release.a
 [`.github/workflows/build.yml`](.github/workflows/build.yml) runs on every push. It:
 
 1. Builds a release APK.
-2. Smoke-tests it on an Android TV emulator: it launches the app, tunes in to NTS 1, switches to a mixtape, pauses, and checks that playback carries on in the background. Screenshots and logs are uploaded as the `smoke-test-output` artifact.
+2. Smoke-tests it on an Android TV emulator: it launches the app, tunes in to NTS 1, switches to a mixtape, pauses, and checks that playback carries on in the background. Screenshots and logs are uploaded as the `smoke-test-output` artifact, and the latest results from `main` are also kept on the [`smoke-test-results`](https://github.com/barneydobson/nts-tv/tree/smoke-test-results) branch.
 3. On a `v*` tag, publishes a GitHub release with `nts-tv.apk` attached.
 
 Release builds are signed with a key stored in two repository secrets: `SIGNING_KEYSTORE_BASE64` (the base64-encoded PKCS12 keystore) and `SIGNING_STORE_PASSWORD`. The key alias defaults to `ntstv`; override it with `SIGNING_KEY_ALIAS` and `SIGNING_KEY_PASSWORD` if needed. Keep the same key forever, or existing installs won't accept updates.
