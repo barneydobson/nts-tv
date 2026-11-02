@@ -8,3 +8,12 @@ local.properties
 *.keystore
 captures/
 .kotlin/
+# Signing material in any form
+*.p12
+*.pfx
+*.pem
+*.key
+*.b64
+keystore.properties
+signing/
+.env

@@ -10,79 +10,114 @@ on:
 permissions:
   contents: read
 
+# Only superseded pull-request runs are cancelled; a push to main never cancels a release.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+env:
+  # SHA-256 of the release signing certificate. Update this if the key is ever rotated.
+  EXPECTED_SIGNER_SHA256: b2935341ac25ad94c218f4bfcaefd1b9a12a62e7c07d3fcb0ff63907f1000021
+
+# Third-party code is pinned to full commit SHAs (Dependabot keeps them current).
 jobs:
   build:
     name: Build APK
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     outputs:
       release: ${{ steps.version.outputs.release }}
       tag: ${{ steps.version.outputs.tag }}
+      sha256: ${{ steps.collect.outputs.sha256 }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
-      - uses: actions/setup-java@v6
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6
         with:
           distribution: temurin
           java-version: "17"
-
-      - uses: gradle/actions/setup-gradle@v6
+          cache: gradle
 
       # A release happens when a v* tag is pushed, or when main is pushed with a
       # version.txt that hasn't been released yet (the release job then creates the tag).
       - name: Work out version
         id: version
+        env:
+          EVENT: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          REF_NAME: ${{ github.ref_name }}
+          RUN_NUMBER: ${{ github.run_number }}
         run: |
           base=$(tr -d '[:space:]' < version.txt)
-          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
-            name="${GITHUB_REF_NAME#v}"; release=true; tag="$GITHUB_REF_NAME"
-          elif [[ "$GITHUB_EVENT_NAME" == push && "$GITHUB_REF" == refs/heads/main ]] &&
+          if [[ "$REF" == refs/tags/v* ]]; then
+            name="${REF_NAME#v}"; release=true; tag="$REF_NAME"
+          elif [[ "$EVENT" == push && "$REF" == refs/heads/main ]] &&
                [ -z "$(git ls-remote --tags origin "refs/tags/v$base")" ]; then
             name="$base"; release=true; tag="v$base"
           else
-            name="$base-dev.$GITHUB_RUN_NUMBER"; release=false; tag=""
+            name="$base-dev.$RUN_NUMBER"; release=false; tag=""
+          fi
+          if ! [[ "$name" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$ ]]; then
+            echo "::error::Refusing to build: invalid version '$name'"
+            exit 1
           fi
           echo "Version $name (release: $release)"
-          echo "name=$name" >> "$GITHUB_OUTPUT"
-          echo "release=$release" >> "$GITHUB_OUTPUT"
-          echo "tag=$tag" >> "$GITHUB_OUTPUT"
-          # Run numbers only go up, so every build can be installed over the previous one.
-          echo "code=$((100 + GITHUB_RUN_NUMBER))" >> "$GITHUB_OUTPUT"
+          {
+            echo "name=$name"
+            echo "release=$release"
+            echo "tag=$tag"
+            # Run numbers only go up, so every build can be installed over the previous one.
+            echo "code=$((100 + RUN_NUMBER))"
+          } >> "$GITHUB_OUTPUT"
 
+      # The release key is only ever decoded for release builds. Everything else
+      # (pull requests, dev builds) is signed with a throwaway debug key.
       - name: Set up release signing key
+        if: steps.version.outputs.release == 'true'
         env:
           KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
         run: |
-          if [ -n "$KEYSTORE_BASE64" ]; then
-            echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
-            echo "SIGNING_KEYSTORE_PATH=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
-          elif [ "${{ steps.version.outputs.release }}" = true ]; then
-            echo "::error::Tagged releases must be signed: set the SIGNING_* repository secrets."
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::error::Releases must be signed: set the SIGNING_KEYSTORE_BASE64 and SIGNING_STORE_PASSWORD secrets."
             exit 1
-          else
-            echo "::warning::No signing key configured; this build is signed with a throwaway debug key."
           fi
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          echo "SIGNING_KEYSTORE_PATH=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
 
       - name: Build release APK
         env:
-          SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
-          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
-          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
-        run: >
-          ./gradlew --no-daemon --stacktrace assembleRelease
-          -PappVersionName="${{ steps.version.outputs.name }}"
-          -PappVersionCode="${{ steps.version.outputs.code }}"
+          APP_VERSION_NAME: ${{ steps.version.outputs.name }}
+          APP_VERSION_CODE: ${{ steps.version.outputs.code }}
+          SIGNING_STORE_PASSWORD: ${{ steps.version.outputs.release == 'true' && secrets.SIGNING_STORE_PASSWORD || '' }}
+          SIGNING_KEY_ALIAS: ${{ steps.version.outputs.release == 'true' && secrets.SIGNING_KEY_ALIAS || '' }}
+          SIGNING_KEY_PASSWORD: ${{ steps.version.outputs.release == 'true' && secrets.SIGNING_KEY_PASSWORD || '' }}
+        run: |
+          ./gradlew --no-daemon --stacktrace assembleRelease \
+            -PappVersionName="$APP_VERSION_NAME" \
+            -PappVersionCode="$APP_VERSION_CODE"
+          rm -f "$RUNNER_TEMP/release.jks"
+
+      - name: Check the signing certificate
+        if: steps.version.outputs.release == 'true'
+        run: |
+          apksigner=$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -n1)apksigner
+          "$apksigner" verify --verbose --print-certs app/build/outputs/apk/release/app-release.apk | tee signer.txt
+          actual=$(grep -m1 -oE 'Signer #1 certificate SHA-256 digest: [0-9a-f]+' signer.txt | awk '{print $NF}')
+          if [ "$actual" != "$EXPECTED_SIGNER_SHA256" ]; then
+            echo "::error::APK is signed with an unexpected certificate ($actual)"
+            exit 1
+          fi
 
       - name: Collect APK
+        id: collect
         run: |
           cp app/build/outputs/apk/release/app-release.apk nts-tv.apk
           sha256sum nts-tv.apk | tee nts-tv.apk.sha256
-          ls -l nts-tv.apk
+          echo "sha256=$(cut -d' ' -f1 nts-tv.apk.sha256)" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: nts-tv-apk
           path: |
@@ -95,22 +130,27 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    permissions:
-      contents: write
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           name: nts-tv-apk
+
+      - name: Check the APK is the one that was built
+        env:
+          EXPECTED: ${{ needs.build.outputs.sha256 }}
+        run: echo "$EXPECTED  nts-tv.apk" | sha256sum -c -
 
       - name: Check the NTS API is up
         run: |
           mkdir -p smoke-output
           curl -fsS https://www.nts.live/api/v2/live -o smoke-output/live.json
           curl -fsS https://www.nts.live/api/v2/mixtapes -o smoke-output/mixtapes.json
-          jq -c '.results[] | {channel_name, title: .now.broadcast_title, location: .now.embeds.details.location_long, start: .now.start_timestamp, end: .now.end_timestamp, media: (.now.embeds.details.media | keys? // [])}' smoke-output/live.json
-          jq -c '.results[] | {mixtape_alias, title, subtitle, audio_stream_endpoint, media: (.media | keys? // [])}' smoke-output/mixtapes.json
+          jq -c '.results[] | {channel_name, title: .now.broadcast_title, location: .now.embeds.details.location_long}' smoke-output/live.json
+          jq -c '.results[] | {mixtape_alias, title, audio_stream_endpoint}' smoke-output/mixtapes.json
 
       - name: Enable KVM
         run: |
@@ -119,7 +159,7 @@ jobs:
           sudo udevadm trigger --name-match=kvm
 
       - name: Install, launch and tune in
-        uses: reactivecircus/android-emulator-runner@v2
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2
         with:
           api-level: 31
           target: android-tv
@@ -129,54 +169,87 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           script: bash .github/scripts/smoke-test.sh nts-tv.apk smoke-output
 
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         if: always()
         with:
           name: smoke-test-output
           path: smoke-output/
 
-      # Also keep the latest main-branch results on a branch, so screenshots can be
-      # browsed (or fetched with git) without downloading artifacts.
-      - name: Publish results to the smoke-test-results branch
-        if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+  # Keeps the latest main-branch screenshots on a branch so they can be browsed without
+  # downloading artifacts. Only this small job, with no third-party code, can write.
+  publish-smoke-results:
+    name: Publish smoke-test screenshots
+    needs: smoke-test
+    if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.smoke-test.result != 'skipped'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          name: smoke-test-output
+          path: smoke-output
+
+      - name: Push to the smoke-test-results branch
         env:
           GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.sha }}
+          RUN_ID: ${{ github.run_id }}
+          REPO: ${{ github.repository }}
         run: |
-          cd smoke-output
+          mkdir publish
+          # Screenshots, media-session state and the app's own log only (no full system log).
+          cp smoke-output/*.png smoke-output/media-session-*.txt publish/ 2>/dev/null || true
+          cp smoke-output/app-log.txt publish/ 2>/dev/null || true
+          cd publish
           git init -q -b smoke-test-results
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -qm "Smoke test output for ${GITHUB_SHA::7} (run $GITHUB_RUN_ID)"
-          git push -qf "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:smoke-test-results
+          git commit -qm "Smoke test output for ${SHA::7} (run $RUN_ID)"
+          git push -qf "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" HEAD:smoke-test-results
 
   release:
     name: Publish GitHub release
     if: needs.build.outputs.release == 'true'
     needs: [build, smoke-test]
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           name: nts-tv-apk
+
+      - name: Check the APK is the one that was built and tested
+        env:
+          EXPECTED: ${{ needs.build.outputs.sha256 }}
+        run: echo "$EXPECTED  nts-tv.apk" | sha256sum -c -
 
       - name: Create release
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ needs.build.outputs.tag }}
+          APK_SHA256: ${{ needs.build.outputs.sha256 }}
+          SHA: ${{ github.sha }}
+          REPO: ${{ github.repository }}
         run: |
           {
             cat .github/release-notes.md
             echo
-            echo "SHA-256: \`$(cut -d' ' -f1 nts-tv.apk.sha256)\`"
+            echo "APK SHA-256: \`$APK_SHA256\`"
+            echo
+            echo "Signing certificate SHA-256: \`$EXPECTED_SIGNER_SHA256\`"
           } > notes.md
           # --target creates the tag at this commit if it doesn't exist yet.
           gh release create "$TAG" nts-tv.apk nts-tv.apk.sha256 \
-            --repo "$GITHUB_REPOSITORY" \
-            --target "$GITHUB_SHA" \
+            --repo "$REPO" \
+            --target "$SHA" \
             --title "NTS Radio for Google TV $TAG" \
             --notes-file notes.md

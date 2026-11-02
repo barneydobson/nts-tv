@@ -30,6 +30,9 @@ android {
                 storePassword = storePass
                 keyAlias = System.getenv("SIGNING_KEY_ALIAS")?.ifBlank { null } ?: "ntstv"
                 keyPassword = System.getenv("SIGNING_KEY_PASSWORD")?.ifBlank { null } ?: storePass
+                enableV2Signing = true
+                // v3 allows a future key rotation (apksigner rotate) without a reinstall.
+                enableV3Signing = true
             }
         }
     }
@@ -54,6 +57,12 @@ android {
 
     buildFeatures {
         buildConfig = true
+    }
+
+    // The encrypted dependency report is only useful to Google Play; leave it out.
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
     }
 
     compileOptions {

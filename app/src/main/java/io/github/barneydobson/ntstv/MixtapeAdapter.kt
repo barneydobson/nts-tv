@@ -27,7 +27,7 @@ class MixtapeAdapter(
     @SuppressLint("NotifyDataSetChanged")
     fun submit(list: List<Mixtape>) {
         if (list == items) return
-        items = list
+        items = list.distinctBy { it.alias }
         notifyDataSetChanged()
     }
 
@@ -41,7 +41,11 @@ class MixtapeAdapter(
 
     override fun getItemCount() = items.size
 
-    override fun getItemId(position: Int) = items[position].alias.hashCode().toLong()
+    // Unique per alias for the life of the adapter (hashCode() can collide).
+    private val ids = HashMap<String, Long>()
+
+    override fun getItemId(position: Int): Long =
+        ids.getOrPut(items[position].alias) { ids.size.toLong() }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
         Holder(LayoutInflater.from(parent.context).inflate(R.layout.item_mixtape, parent, false))

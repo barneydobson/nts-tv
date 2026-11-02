@@ -3,6 +3,8 @@ package io.github.barneydobson.ntstv
 import android.net.Uri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import java.net.URI
+import java.net.URISyntaxException
 import java.time.Instant
 
 /** A broadcast on one of the live channels, as described by the NTS API. */
@@ -41,6 +43,25 @@ object Stations {
         "1" to "https://stream-relay-geo.ntslive.net/stream",
         "2" to "https://stream-relay-geo.ntslive.net/stream2",
     )
+
+    /**
+     * Only NTS's own hosts, over HTTPS, are ever fetched: the API, its image CDN and its
+     * stream relays. Anything else (other hosts, http:, file:, content:, ...) is rejected,
+     * whether it comes from the API or from a media controller.
+     */
+    private val TRUSTED_HOSTS = listOf("nts.live", "ntslive.net", "ntslive.co.uk")
+
+    fun isTrustedUrl(url: String?): Boolean {
+        if (url.isNullOrBlank()) return false
+        val uri = try {
+            URI(url)
+        } catch (e: URISyntaxException) {
+            return false
+        }
+        if (!"https".equals(uri.scheme, ignoreCase = true) || uri.rawUserInfo != null) return false
+        val host = uri.host?.lowercase() ?: return false
+        return TRUSTED_HOSTS.any { host == it || host.endsWith(".$it") }
+    }
 
     fun liveId(channel: String) = LIVE_PREFIX + channel
 

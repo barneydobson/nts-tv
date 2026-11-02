@@ -29,6 +29,10 @@ Download the latest APK from [Releases](https://github.com/barneydobson/nts-tv/r
 
 **NTS Radio** now appears in *Apps → Your apps*. Long-press it to add it to your Favourites.
 
+5. **Lock things back down:** turn *Unknown sources* off again for Downloader (Settings → Apps → Security & restrictions). If you turned on USB or wireless debugging, turn that off too. Turn them on again only when you install an update.
+
+To check an APK is genuine, see [SECURITY.md](SECURITY.md) for the signing certificate's fingerprint.
+
 To **update**, repeat step 4. Releases are all signed with the same key, so each one installs over the last.
 
 ### Alternative: install from a computer with adb

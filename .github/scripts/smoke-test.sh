@@ -88,6 +88,7 @@ check "Still playing in the background" wait_for_state 3 20
 shot 6-home-screen
 
 adb logcat -d > "$OUT/logcat.txt"
+adb logcat -d -v threadtime --pid="$(adb shell pidof "$PKG")" > "$OUT/app-log.txt" 2>&1
 check "App process is alive" adb shell pidof "$PKG"
 if grep -A 20 "FATAL EXCEPTION" "$OUT/logcat.txt" | grep -q "$PKG"; then
   echo "::error title=Smoke test::FAIL: app crashed: $(grep -A 3 'FATAL EXCEPTION' "$OUT/logcat.txt" | tr '\n' ' ' | cut -c1-400)"

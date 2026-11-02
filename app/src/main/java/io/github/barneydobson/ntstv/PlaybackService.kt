@@ -11,7 +11,6 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
@@ -51,14 +50,14 @@ class PlaybackService : MediaSessionService() {
     override fun onCreate() {
         super.onCreate()
 
+        // HTTP(S) only: no file/content/asset schemes, and no https -> http redirects.
         val http = DefaultHttpDataSource.Factory()
             .setUserAgent(NtsApi.USER_AGENT)
-            .setAllowCrossProtocolRedirects(true)
             .setConnectTimeoutMs(15_000)
             .setReadTimeoutMs(20_000)
 
         player = ExoPlayer.Builder(this)
-            .setMediaSourceFactory(DefaultMediaSourceFactory(DefaultDataSource.Factory(this, http)))
+            .setMediaSourceFactory(DefaultMediaSourceFactory(http))
             .setAudioAttributes(
                 AudioAttributes.Builder()
                     .setUsage(C.USAGE_MEDIA)
@@ -150,11 +149,29 @@ class PlaybackService : MediaSessionService() {
             controller: MediaSession.ControllerInfo,
             mediaItems: MutableList<MediaItem>,
         ): ListenableFuture<MutableList<MediaItem>> {
+            // Controllers can't be trusted to supply URLs: live channels always use the
+            // built-in stream URLs, and anything else must be an HTTPS URL on NTS's hosts.
             val resolved = mediaItems.mapNotNull { item ->
-                val uri = item.localConfiguration?.uri
-                    ?: item.requestMetadata.mediaUri
-                    ?: Stations.knownStreamUrl(item.mediaId)?.let(Uri::parse)
-                uri?.let { item.buildUpon().setUri(it).build() }
+                val uri = when {
+                    Stations.liveChannelOf(item.mediaId) != null ->
+                        Stations.knownStreamUrl(item.mediaId)
+                    Stations.mixtapeAliasOf(item.mediaId) != null ->
+                        (item.localConfiguration?.uri ?: item.requestMetadata.mediaUri)
+                            ?.toString()
+                            ?.takeIf(Stations::isTrustedUrl)
+                    else -> null
+                } ?: return@mapNotNull null
+
+                val artwork = item.mediaMetadata.artworkUri?.takeIf { Stations.isTrustedUrl(it.toString()) }
+                item.buildUpon()
+                    .setUri(Uri.parse(uri))
+                    .setMediaMetadata(item.mediaMetadata.buildUpon().setArtworkUri(artwork).build())
+                    .build()
+            }
+            if (resolved.size != mediaItems.size) {
+                return Futures.immediateFailedFuture(
+                    UnsupportedOperationException("Only NTS stations can be played"),
+                )
             }
             return Futures.immediateFuture(resolved.toMutableList())
         }
