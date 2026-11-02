@@ -203,6 +203,7 @@ jobs:
   # downloading artifacts. Only this small job, with no third-party code, can write.
   publish-smoke-results:
     name: Publish smoke-test screenshots
+    continue-on-error: true
     needs: smoke-test
     if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.smoke-test.result != 'skipped'
     runs-on: ubuntu-latest
@@ -231,8 +232,16 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
+          if git diff --cached --quiet; then echo "Nothing to publish"; exit 0; fi
           git commit -qm "Smoke test output for ${SHA::7} (run $RUN_ID)"
-          git push -qf "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" HEAD:smoke-test-results
+          for attempt in 1 2 3; do
+            if out=$(git push -qf "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" HEAD:smoke-test-results 2>&1); then
+              exit 0
+            fi
+            echo "::warning title=Publish::Push attempt $attempt failed: $(echo "$out" | sed "s/$GH_TOKEN/***/g" | tr '\n' ' ' | cut -c1-300)"
+            sleep $((attempt * 10))
+          done
+          exit 1
 
   release:
     name: Publish GitHub release
@@ -338,6 +347,7 @@ jobs:
 
   publish-update-test-results:
     name: Publish update-test screenshots
+    continue-on-error: true
     needs: update-test
     if: always() && needs.update-test.result != 'skipped'
     runs-on: ubuntu-latest
@@ -367,5 +377,13 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
+          if git diff --cached --quiet; then echo "Nothing to publish"; exit 0; fi
           git commit -qm "Update test output for ${SHA::7} (run $RUN_ID)"
-          git push -qf "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" HEAD:update-test-results
+          for attempt in 1 2 3; do
+            if out=$(git push -qf "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" HEAD:update-test-results 2>&1); then
+              exit 0
+            fi
+            echo "::warning title=Publish::Push attempt $attempt failed: $(echo "$out" | sed "s/$GH_TOKEN/***/g" | tr '\n' ' ' | cut -c1-300)"
+            sleep $((attempt * 10))
+          done
+          exit 1
