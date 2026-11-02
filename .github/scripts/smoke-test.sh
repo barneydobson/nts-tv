@@ -90,6 +90,12 @@ shot 6-home-screen
 adb logcat -d > "$OUT/logcat.txt"
 adb logcat -d -v threadtime --pid="$(adb shell pidof "$PKG")" > "$OUT/app-log.txt" 2>&1
 check "App process is alive" adb shell pidof "$PKG"
+# Artwork for the system's media controls is loaded separately from the app's own images.
+if grep -q "Failed to load bitmap" "$OUT/app-log.txt"; then
+  echo "::warning title=Smoke test::System media artwork failed to load: $(grep -m1 'Failed to load bitmap' "$OUT/app-log.txt" | cut -c1-200)"
+else
+  echo "::notice title=Smoke test::System media artwork loaded"
+fi
 if grep -A 20 "FATAL EXCEPTION" "$OUT/logcat.txt" | grep -q "$PKG"; then
   echo "::error title=Smoke test::FAIL: app crashed: $(grep -A 3 'FATAL EXCEPTION' "$OUT/logcat.txt" | tr '\n' ' ' | cut -c1-400)"
   grep -A 30 "FATAL EXCEPTION" "$OUT/logcat.txt"

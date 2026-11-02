@@ -1,10 +1,17 @@
 version: 2
 updates:
+  # One grouped pull request per ecosystem per week, rather than one per dependency.
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
   - package-ecosystem: gradle
     directory: /
     schedule:
       interval: weekly
+    groups:
+      gradle-minor:
+        update-types: [minor, patch]

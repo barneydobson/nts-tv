@@ -151,6 +151,12 @@ jobs:
           curl -fsS https://www.nts.live/api/v2/mixtapes -o smoke-output/mixtapes.json
           jq -c '.results[] | {channel_name, title: .now.broadcast_title, location: .now.embeds.details.location_long}' smoke-output/live.json
           jq -c '.results[] | {mixtape_alias, title, audio_stream_endpoint}' smoke-output/mixtapes.json
+          # How quickly the image CDN serves the artwork the app will ask for.
+          art=$(jq -r '.results[0].now.embeds.details.media.picture_medium_large // empty' smoke-output/live.json)
+          if [ -n "$art" ]; then
+            curl -sS -o /dev/null --max-time 30 -w "::notice title=Artwork CDN::HTTP %{http_code} in %{time_total}s (http/%{http_version}) for $art\n" "$art" ||
+              echo "::warning title=Artwork CDN::fetch failed for $art"
+          fi
 
       - name: Enable KVM
         run: |
