@@ -90,6 +90,8 @@ shot 6-home-screen
 adb logcat -d > "$OUT/logcat.txt"
 adb logcat -d -v threadtime --pid="$(adb shell pidof "$PKG")" > "$OUT/app-log.txt" 2>&1
 check "App process is alive" adb shell pidof "$PKG"
+updater=$(grep -m1 "NtsTvUpdater" "$OUT/app-log.txt" | sed -E 's/.*NtsTvUpdater: //' | cut -c1-200)
+echo "::notice title=Updater::${updater:-(no updater log line)}"
 # Artwork for the system's media controls is loaded separately from the app's own images.
 if grep -q "Failed to load bitmap" "$OUT/app-log.txt"; then
   echo "::warning title=Smoke test::System media artwork failed to load: $(grep -m1 'Failed to load bitmap' "$OUT/app-log.txt" | cut -c1-200)"

@@ -29,11 +29,20 @@ Download the latest APK from [Releases](https://github.com/barneydobson/nts-tv/r
 
 **NTS Radio** now appears in *Apps → Your apps*. Long-press it to add it to your Favourites.
 
-5. **Lock things back down:** turn *Unknown sources* off again for Downloader (Settings → Apps → Security & restrictions). If you turned on USB or wireless debugging, turn that off too. Turn them on again only when you install an update.
+5. **Lock things back down:** turn *Unknown sources* off again for Downloader (Settings → Apps → Security & restrictions). If you turned on USB or wireless debugging, turn that off too. NTS Radio keeps its own permission to install its updates.
 
 To check an APK is genuine, see [SECURITY.md](SECURITY.md) for the signing certificate's fingerprint.
 
-To **update**, repeat step 4. Releases are all signed with the same key, so each one installs over the last.
+### Updates
+
+From v1.1.0 the app **updates itself**. When you open it, it checks this repository's latest release, downloads it and checks it's genuine (see below):
+
+- **Nothing playing:** it installs the update straight away. NTS Radio closes; open it again and you're on the new version.
+- **Something playing:** an **Update** button appears at the top instead, so your music is never cut off without asking.
+
+The first time it updates, your TV asks whether NTS Radio may install apps. Allow it, and later updates install without asking.
+
+Versions before 1.1.0 can't update themselves: install the latest release once with Downloader (step 4), over the top of the old one.
 
 ### Alternative: install from a computer with adb
 
@@ -80,6 +89,7 @@ Without signing secrets, the APK at `app/build/outputs/apk/release/app-release.a
 1. Builds a release APK.
 2. Smoke-tests it on an Android TV emulator: it launches the app, tunes in to NTS 1, switches to a mixtape, pauses, and checks that playback carries on in the background. Screenshots and logs are uploaded as the `smoke-test-output` artifact, and the latest results from `main` are also kept on the [`smoke-test-results`](https://github.com/barneydobson/nts-tv/tree/smoke-test-results) branch.
 3. Publishes a GitHub release with `nts-tv.apk` attached when `main` has a `version.txt` that hasn't been released yet, or when a `v*` tag is pushed.
+4. After a release, installs the *previous* release on the emulator and checks it updates itself to the new one (results on the [`update-test-results`](https://github.com/barneydobson/nts-tv/tree/update-test-results) branch).
 
 Release builds are signed with a key stored in two repository secrets: `SIGNING_KEYSTORE_BASE64` (the base64-encoded PKCS12 keystore) and `SIGNING_STORE_PASSWORD`. The key alias defaults to `ntstv`; override it with `SIGNING_KEY_ALIAS` and `SIGNING_KEY_PASSWORD` if needed. Keep the same key forever, or existing installs won't accept updates.
 

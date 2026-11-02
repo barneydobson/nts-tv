@@ -9,4 +9,6 @@ Unofficial NTS Radio player for **Chromecast with Google TV**, **Google TV Strea
    `https://github.com/barneydobson/nts-tv/releases/latest/download/nts-tv.apk`
    then choose *Install*.
 
-NTS Radio then appears under *Apps* (add it to your Favourites row so it's one click away). Afterwards, turn *Unknown sources* off again for Downloader. To update, turn it back on and repeat step 4 with the same address.
+NTS Radio then appears under *Apps* (add it to your Favourites row so it's one click away). Afterwards, turn *Unknown sources* off again for Downloader.
+
+From v1.1.0 the app updates itself when you open it. The first time, allow NTS Radio to install apps when your TV asks.

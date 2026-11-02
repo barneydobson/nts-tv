@@ -28,6 +28,7 @@ import com.google.common.util.concurrent.ListenableFuture
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -44,6 +45,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var mixtapeStatus: TextView
     private lateinit var mixtapeCaption: TextView
     private lateinit var nowPlaying: TextView
+    private lateinit var updateButton: TextView
     private lateinit var backdrop: ImageView
 
     private var live: List<LiveChannel> = emptyList()
@@ -67,6 +69,8 @@ class MainActivity : ComponentActivity() {
             backdrop.alpha = 0.2f
         }
         nowPlaying = findViewById(R.id.now_playing)
+        updateButton = findViewById(R.id.update_button)
+        updateButton.setOnClickListener { installUpdateFromButton() }
         mixtapeStatus = findViewById(R.id.mixtapes_status)
         mixtapeCaption = findViewById(R.id.mixtape_caption)
         findViewById<TextView>(R.id.footer).text = getString(R.string.footer, BuildConfig.VERSION_NAME)
@@ -95,6 +99,8 @@ class MainActivity : ComponentActivity() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch { pollLiveSchedule() }
                 launch { loadMixtapes() }
+                launch { Updater.state.collect { renderUpdate(it) } }
+                launch { checkForUpdate() }
             }
         }
 
@@ -170,6 +176,45 @@ class MainActivity : ComponentActivity() {
         c.isPlaying -> PlayState.PLAYING
         c.playWhenReady && c.playbackState != Player.STATE_READY -> PlayState.BUFFERING
         else -> PlayState.PAUSED
+    }
+
+    // ---- Updates ----
+
+    /**
+     * Installs a new release straight away if nothing is playing (the app closes and the user
+     * reopens it); otherwise offers an "Update" button rather than cutting off the music.
+     */
+    private suspend fun checkForUpdate() {
+        val update = Updater.check(applicationContext) ?: return
+        val connected = withTimeoutOrNull(10_000L) {
+            while (controller == null) delay(100)
+            controller
+        }
+        if (connected != null && !connected.playWhenReady && Updater.state.value is UpdateState.Ready) {
+            Updater.install(applicationContext, update)
+        }
+    }
+
+    private fun installUpdateFromButton() {
+        val update = when (val state = Updater.state.value) {
+            is UpdateState.Ready -> state.update
+            is UpdateState.Failed -> state.update
+            else -> return
+        }
+        lifecycleScope.launch { Updater.install(applicationContext, update) }
+    }
+
+    private fun renderUpdate(state: UpdateState) {
+        val (text, actionable) = when (state) {
+            UpdateState.None -> null to false
+            is UpdateState.Ready -> getString(R.string.update_ready, state.update.version) to true
+            is UpdateState.Installing -> getString(R.string.update_installing, state.update.version) to false
+            is UpdateState.Failed -> getString(R.string.update_failed, state.update.version) to true
+        }
+        updateButton.isVisible = text != null
+        updateButton.text = text
+        updateButton.isFocusable = actionable
+        updateButton.isClickable = actionable
     }
 
     // ---- Data ----
