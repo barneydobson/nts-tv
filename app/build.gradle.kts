@@ -76,13 +76,13 @@ android {
 }
 
 dependencies {
-    implementation("androidx.core:core-ktx:1.15.0")
+    implementation("androidx.core:core-ktx:1.19.1")
     implementation("androidx.activity:activity-ktx:1.9.3")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
-    implementation("androidx.recyclerview:recyclerview:1.3.2")
+    implementation("androidx.recyclerview:recyclerview:1.4.0")
     implementation("androidx.media3:media3-exoplayer:1.5.1")
     implementation("androidx.media3:media3-session:1.5.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.9.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.11.0")
     implementation("io.coil-kt:coil:2.7.0")
 }
