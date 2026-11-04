@@ -63,8 +63,16 @@ done
 check "Updated itself from $before to $EXPECTED (now: ${after:-unknown})" [ "$after" = "$EXPECTED" ]
 
 echo "==> Reopening the updated app"
-adb shell am start -W -n "$PKG/.MainActivity"
-sleep 15
+# The new version is registered before Android has finished optimising it; a launch
+# during that window is ignored, so give it a moment and retry like a person would.
+sleep 10
+for attempt in 1 2 3 4; do
+  adb shell am start -W -n "$PKG/.MainActivity"
+  sleep 8
+  adb shell pidof "$PKG" > /dev/null && break
+  echo "Launch attempt $attempt didn't start the app yet; retrying"
+done
+sleep 5
 shot 3-after-update
 check "Updated app starts" adb shell pidof "$PKG"
 adb logcat -d -v threadtime > "$OUT/logcat-after.txt"
