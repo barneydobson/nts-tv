@@ -31,6 +31,13 @@ class PreparedUpdate(val version: String, val apk: File)
 sealed interface UpdateState {
     data object None : UpdateState
     data class Ready(val update: PreparedUpdate) : UpdateState
+
+    /** The user hasn't yet allowed this app to install updates (a one-off Settings switch). */
+    data class NeedsPermission(val update: PreparedUpdate) : UpdateState
+
+    /** Android wants the user to confirm; the visible screen shows [prompt]. */
+    data class NeedsConfirmation(val update: PreparedUpdate, val prompt: Intent) : UpdateState
+
     data class Installing(val update: PreparedUpdate) : UpdateState
     data class Failed(val update: PreparedUpdate) : UpdateState
 }
@@ -70,7 +77,12 @@ object Updater {
     suspend fun check(context: Context): PreparedUpdate? {
         when (val current = _state.value) {
             is UpdateState.Ready -> return current.update
-            is UpdateState.Installing, is UpdateState.Failed -> return null
+            is UpdateState.NeedsPermission -> {
+                // Back from Settings with the switch turned on: ready to go.
+                if (canInstall(context)) _state.value = UpdateState.Ready(current.update)
+                return current.update
+            }
+            is UpdateState.Installing, is UpdateState.NeedsConfirmation, is UpdateState.Failed -> return null
             UpdateState.None -> Unit
         }
         val now = SystemClock.elapsedRealtime()
@@ -96,6 +108,11 @@ object Updater {
 
     /** Hands the update to Android's package installer. The app is restarted by the update. */
     suspend fun install(context: Context, update: PreparedUpdate) {
+        if (!canInstall(context)) {
+            Log.i(TAG, "Install permission needed for ${update.version}")
+            _state.value = UpdateState.NeedsPermission(update)
+            return
+        }
         _state.value = UpdateState.Installing(update)
         try {
             withContext(Dispatchers.IO) { commitSession(context, update.apk) }
@@ -110,8 +127,35 @@ object Updater {
 
     /** Called by [UpdateReceiver] when Android reports that the install didn't happen. */
     internal fun onInstallFailed() {
-        (_state.value as? UpdateState.Installing)?.let { _state.value = UpdateState.Failed(it.update) }
+        when (val current = _state.value) {
+            is UpdateState.Installing -> _state.value = UpdateState.Failed(current.update)
+            is UpdateState.NeedsConfirmation -> _state.value = UpdateState.Failed(current.update)
+            else -> Unit
+        }
     }
+
+    /** Called by [UpdateReceiver]: Android needs the user to confirm (shown by the activity). */
+    internal fun onUserActionNeeded(prompt: Intent) {
+        (_state.value as? UpdateState.Installing)?.let {
+            Log.i(TAG, "Android wants confirmation to install ${it.update.version}")
+            _state.value = UpdateState.NeedsConfirmation(it.update, prompt)
+        }
+    }
+
+    /** The activity has put Android's confirmation prompt on screen. */
+    fun onPromptShown() {
+        (_state.value as? UpdateState.NeedsConfirmation)?.let { _state.value = UpdateState.Installing(it.update) }
+    }
+
+    /** No result from Android for a long time: offer a retry rather than waiting forever. */
+    fun onInstallTimedOut(stuck: UpdateState.Installing) {
+        if (_state.value === stuck) {
+            Log.w(TAG, "No result installing ${stuck.update.version}; offering a retry")
+            _state.value = UpdateState.Failed(stuck.update)
+        }
+    }
+
+    fun canInstall(context: Context): Boolean = context.packageManager.canRequestPackageInstalls()
 
     private fun isReleaseBuild(context: Context): Boolean =
         RELEASE_CERT_SHA256 in certificateHashes(installedInfo(context))

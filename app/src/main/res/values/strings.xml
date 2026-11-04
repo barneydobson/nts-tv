@@ -29,6 +29,7 @@
 
     <string name="update_ready">Update to v%1$s</string>
     <string name="update_installing">Updating to v%1$s… open NTS Radio again when it closes</string>
+    <string name="update_needs_permission">Allow updates: press, then switch on NTS Radio</string>
     <string name="update_failed">Update to v%1$s didn\'t install · press to retry</string>
 
     <string name="settings">Settings</string>

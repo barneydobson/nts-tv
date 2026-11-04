@@ -42,7 +42,7 @@ From v1.1.0 the app **updates itself**. When you open it, it checks this reposit
 - **Nothing playing:** it installs the update straight away. NTS Radio closes; open it again and you're on the new version.
 - **Something playing:** an **Update** button appears at the top instead, so your music is never cut off without asking.
 
-The first time it updates, your TV asks whether NTS Radio may install apps. Allow it, and later updates install without asking.
+The first time, an **Allow updates** button appears at the top. Press it, switch on **NTS Radio** on the settings screen that opens, then press Back: the update installs, and later ones install without asking. (You can also switch it on yourself: Settings → Apps → Security & restrictions → Unknown sources → NTS Radio.)
 
 Versions before 1.1.0 can't update themselves: install the latest release once with Downloader (step 4), over the top of the old one.
 

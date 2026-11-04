@@ -1,6 +1,10 @@
 package io.github.barneydobson.ntstv
 
+import android.content.ActivityNotFoundException
 import android.content.ComponentName
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.os.Build
@@ -33,6 +37,7 @@ import com.google.common.util.concurrent.ListenableFuture
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import java.time.Instant
@@ -127,6 +132,15 @@ class MainActivity : ComponentActivity() {
                 launch { pollLiveSchedule() }
                 launch { loadMixtapes() }
                 launch { Updater.state.collect { renderUpdate(it) } }
+                launch {
+                    // Never sit on "Updating…" forever if Android doesn't report back.
+                    Updater.state.collectLatest { state ->
+                        if (state is UpdateState.Installing) {
+                            delay(INSTALL_TIMEOUT_MS)
+                            Updater.onInstallTimedOut(state)
+                        }
+                    }
+                }
                 launch { checkForUpdate() }
             }
         }
@@ -447,7 +461,9 @@ class MainActivity : ComponentActivity() {
             while (controller == null) delay(100)
             controller
         }
-        if (connected != null && !connected.playWhenReady && Updater.state.value is UpdateState.Ready) {
+        val state = Updater.state.value
+        val waiting = state is UpdateState.Ready || state is UpdateState.NeedsPermission
+        if (connected != null && !connected.playWhenReady && waiting) {
             Updater.install(applicationContext, update)
         }
     }
@@ -456,22 +472,65 @@ class MainActivity : ComponentActivity() {
         val update = when (val state = Updater.state.value) {
             is UpdateState.Ready -> state.update
             is UpdateState.Failed -> state.update
+            is UpdateState.NeedsPermission -> {
+                if (!Updater.canInstall(this)) {
+                    openInstallPermissionSettings()
+                    return
+                }
+                state.update
+            }
             else -> return
         }
         lifecycleScope.launch { Updater.install(applicationContext, update) }
     }
 
+    /** The one-off "allow NTS Radio to install apps" switch, as directly as this TV allows. */
+    private fun openInstallPermissionSettings() {
+        val candidates = listOf(
+            Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName")),
+            Intent(Settings.ACTION_SECURITY_SETTINGS),
+            Intent(Settings.ACTION_SETTINGS),
+        )
+        for (intent in candidates) {
+            try {
+                startActivity(intent)
+                Log.i(Updater.TAG, "Opened settings: ${intent.action}")
+                return
+            } catch (e: ActivityNotFoundException) {
+                // Try the next, more general screen.
+            }
+        }
+    }
+
     private fun renderUpdate(state: UpdateState) {
+        if (state is UpdateState.NeedsConfirmation) {
+            // Show Android's own confirmation from this visible screen (it can't be blocked here).
+            try {
+                startActivity(state.prompt)
+                Updater.onPromptShown()
+            } catch (e: Exception) {
+                Log.w(Updater.TAG, "Couldn't show the install prompt: ${e.message}")
+                Updater.onInstallFailed()
+            }
+            return
+        }
         val (text, actionable) = when (state) {
             UpdateState.None -> null to false
             is UpdateState.Ready -> getString(R.string.update_ready, state.update.version) to true
+            is UpdateState.NeedsPermission -> getString(R.string.update_needs_permission) to true
             is UpdateState.Installing -> getString(R.string.update_installing, state.update.version) to false
             is UpdateState.Failed -> getString(R.string.update_failed, state.update.version) to true
+            is UpdateState.NeedsConfirmation -> null to false
         }
+        val wasVisible = updateButton.isVisible
         updateButton.isVisible = text != null
         updateButton.text = text
         updateButton.isFocusable = actionable
         updateButton.isClickable = actionable
+        // Make the one-off permission step easy to find with the remote.
+        if (state is UpdateState.NeedsPermission && !wasVisible && !darkMode && !settingsOverlay.isVisible) {
+            updateButton.requestFocus()
+        }
     }
 
     // ---- Data ----
@@ -681,6 +740,7 @@ class MainActivity : ComponentActivity() {
 
 private const val SCREEN_TAG = "NtsTvScreen"
 private const val FOCUS_TAG = "NtsTvFocus"
+private const val INSTALL_TIMEOUT_MS = 3 * 60_000L
 private const val DRIFT_INTERVAL_MS = 60_000L
 
 /** Keys that keep working normally while the screen is dark. */

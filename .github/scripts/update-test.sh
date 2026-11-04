@@ -13,6 +13,12 @@ mkdir -p "$OUT"
 failures=0
 
 shot() { adb exec-out screencap -p > "$OUT/$1.png"; }
+key() { adb shell input keyevent "$1"; sleep 1.5; }
+logged() { adb logcat -d | grep -q "$1"; }
+wait_logged() { # wait_logged <pattern> <seconds>
+  for _ in $(seq 1 "$2"); do logged "$1" && return 0; sleep 1; done
+  return 1
+}
 installed_version() {
   adb shell dumpsys package "$PKG" | grep -m1 -oE 'versionName=[^ ]+' | cut -d= -f2 | tr -d '\r'
 }
@@ -33,10 +39,27 @@ adb install -r "$APK" || exit 1
 before=$(installed_version)
 echo "::notice title=Update test::Installed previous release $before; expecting it to update to $EXPECTED"
 
-# Equivalent of the one-time "allow NTS Radio to install apps" prompt on a real TV.
-adb shell appops set "$PKG" REQUEST_INSTALL_PACKAGES allow
 adb logcat -c
-adb shell am start -W -n "$PKG/.MainActivity"
+if printf '%s\n' "1.2.1" "$before" | sort -V -C; then
+  # From 1.2.1 the app asks for the one-off install permission itself: go through that
+  # exactly as a first-time user would.
+  echo "::notice title=Update test::First-time flow: the permission isn't granted in advance"
+  adb shell am start -W -n "$PKG/.MainActivity"
+  check "Asks for the install permission" wait_logged "Install permission needed" 90
+  sleep 2
+  shot 1-allow-updates
+  key KEYCODE_DPAD_CENTER   # the focused "Allow updates" button
+  sleep 3
+  shot 2-settings
+  check "Opens the setting" sh -c "adb shell dumpsys activity activities | grep -m1 -E 'mResumedActivity|topResumedActivity' | grep -qi settings"
+  # Switch it on (as the user would on that screen), then go back to the app.
+  adb shell appops set "$PKG" REQUEST_INSTALL_PACKAGES allow
+  key KEYCODE_BACK
+else
+  # Older releases relied on Android's own prompt; grant the permission up front.
+  adb shell appops set "$PKG" REQUEST_INSTALL_PACKAGES allow
+  adb shell am start -W -n "$PKG/.MainActivity"
+fi
 sleep 5
 shot 1-opened
 

@@ -20,18 +20,14 @@ class UpdateReceiver : BroadcastReceiver() {
         val status = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, PackageInstaller.STATUS_FAILURE)
         when (status) {
             PackageInstaller.STATUS_PENDING_USER_ACTION -> {
-                // First update: Android asks the user to allow it (and to confirm).
+                // Android wants the user to confirm. Starting that screen from here can be
+                // silently blocked (this receiver counts as background), so hand it to the
+                // visible activity instead.
                 val confirm = IntentCompat.getParcelableExtra(intent, Intent.EXTRA_INTENT, Intent::class.java)
                 if (confirm == null) {
                     Updater.onInstallFailed()
-                    return
-                }
-                Log.i(Updater.TAG, "Asking for permission to install the update")
-                try {
-                    context.startActivity(confirm.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-                } catch (e: Exception) {
-                    Log.w(Updater.TAG, "Couldn't show the install prompt: ${e.message}")
-                    Updater.onInstallFailed()
+                } else {
+                    Updater.onUserActionNeeded(confirm)
                 }
             }
             PackageInstaller.STATUS_SUCCESS -> Log.i(Updater.TAG, "Update installed")

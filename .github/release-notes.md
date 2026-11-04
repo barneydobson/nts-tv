@@ -11,4 +11,4 @@ Unofficial NTS Radio player for **Chromecast with Google TV**, **Google TV Strea
 
 NTS Radio then appears under *Apps* (add it to your Favourites row so it's one click away). Afterwards, turn *Unknown sources* off again for Downloader.
 
-From v1.1.0 the app updates itself when you open it. The first time, allow NTS Radio to install apps when your TV asks.
+From v1.1.0 the app updates itself when you open it. The first time, press **Allow updates** at the top, switch on NTS Radio, and press Back. If an update ever seems stuck on v1.1.x–1.2.0, switch on Settings → Apps → Security & restrictions → Unknown sources → NTS Radio, force stop the app, and open it again.
