@@ -105,6 +105,7 @@ class MainActivity : ComponentActivity() {
             "1" to ChannelCard("1", findViewById(R.id.channel1)),
             "2" to ChannelCard("2", findViewById(R.id.channel2)),
         )
+        linkHeaderFocus()
 
         mixtapeAdapter = MixtapeAdapter(
             onClick = { mixtape ->
@@ -267,6 +268,31 @@ class MainActivity : ComponentActivity() {
             stepperKey(keyCode, event) { delta -> changeDarkAfter(delta) }
         }
         darkRow.setOnClickListener { changeDarkAfter(1, wrap = true) }
+    }
+
+    /**
+     * The header buttons sit far from the cards, so automatic D-pad navigation doesn't connect
+     * them reliably: wire up/down between them explicitly.
+     */
+    private fun linkHeaderFocus() {
+        val card1 = cards.getValue("1").root
+        val card2 = cards.getValue("2").root
+        card1.nextFocusUpId = R.id.dark_button
+        card2.nextFocusUpId = R.id.settings_button
+        card2.nextFocusRightId = R.id.channel2 // don't jump down into the mixtapes row
+        findViewById<View>(R.id.dark_button).nextFocusDownId = R.id.channel2
+        findViewById<View>(R.id.settings_button).nextFocusDownId = R.id.channel2
+        updateButton.nextFocusDownId = R.id.channel1
+        window.decorView.viewTreeObserver.addOnGlobalFocusChangeListener { _, now ->
+            val name = now?.id?.takeIf { it != View.NO_ID }?.let {
+                try {
+                    resources.getResourceEntryName(it)
+                } catch (e: Exception) {
+                    null
+                }
+            }
+            if (name != null) Log.d(FOCUS_TAG, "Focus: $name")
+        }
     }
 
     /** Left/right on a settings row changes its value. */
@@ -651,6 +677,7 @@ class MainActivity : ComponentActivity() {
 }
 
 private const val SCREEN_TAG = "NtsTvScreen"
+private const val FOCUS_TAG = "NtsTvFocus"
 private const val DRIFT_INTERVAL_MS = 60_000L
 
 /** Keys that keep working normally while the screen is dark. */
