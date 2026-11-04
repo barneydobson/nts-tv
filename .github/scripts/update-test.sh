@@ -64,6 +64,20 @@ if printf '%s\n' "1.2.1" "$before" | sort -V -C; then
   # Switch it on (as the user would on that screen), then go back to the app.
   adb shell appops set "$PKG" REQUEST_INSTALL_PACKAGES allow
   key KEYCODE_BACK
+  for _ in $(seq 1 20); do [ "$(installed_version)" = "$EXPECTED" ] && break; sleep 2; done
+  if [ "$(installed_version)" != "$EXPECTED" ]; then
+    if printf '%s\n' "1.2.4" "$before" | sort -V -C; then
+      echo "::error title=Update test::FAIL: didn't carry on after coming back from Settings"
+      failures=$((failures + 1))
+    else
+      echo "::notice title=Update test::$before only re-checks when reopened; reopening it"
+    fi
+    adb shell input keyevent KEYCODE_HOME
+    sleep 3
+    adb shell am start -W -n "$PKG/.MainActivity"
+  else
+    echo "::notice title=Update test::PASS: carried on by itself after Settings"
+  fi
 else
   # Older releases relied on Android's own prompt; grant the permission up front.
   adb shell appops set "$PKG" REQUEST_INSTALL_PACKAGES allow

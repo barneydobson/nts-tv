@@ -175,6 +175,15 @@ class MainActivity : ComponentActivity() {
         resetIdleTimer()
     }
 
+    override fun onResume() {
+        super.onResume()
+        // Back from Settings with updates allowed. On TVs that screen is often a side panel,
+        // so this app is only paused (not stopped) and onStart's check doesn't run again.
+        if (Updater.state.value is UpdateState.NeedsPermission && Updater.canInstall(this)) {
+            lifecycleScope.launch { checkForUpdate() }
+        }
+    }
+
     override fun onStop() {
         exitDarkMode()
         idleJob?.cancel()

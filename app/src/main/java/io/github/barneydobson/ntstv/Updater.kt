@@ -108,6 +108,8 @@ object Updater {
 
     /** Hands the update to Android's package installer. The app is restarted by the update. */
     suspend fun install(context: Context, update: PreparedUpdate) {
+        val current = _state.value
+        if (current is UpdateState.Installing || current is UpdateState.NeedsConfirmation) return
         if (!canInstall(context)) {
             Log.i(TAG, "Install permission needed for ${update.version}")
             _state.value = UpdateState.NeedsPermission(update)
