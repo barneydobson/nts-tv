@@ -79,9 +79,44 @@ key KEYCODE_DPAD_CENTER
 check "OK pauses playback" wait_for_state 2 15
 shot 5-paused
 
-log "Going home; playback should be able to carry on in the background"
+log "Resuming"
 key KEYCODE_DPAD_CENTER
 wait_for_state 3 60
+
+logged() { adb logcat -d | grep -q "$1"; }
+
+log "Settings: the gear icon is top right; turn the volume up two steps"
+key KEYCODE_DPAD_UP
+key KEYCODE_DPAD_RIGHT
+key KEYCODE_DPAD_RIGHT
+shot 7-header-focus
+key KEYCODE_DPAD_CENTER
+sleep 1
+shot 8-settings
+key KEYCODE_DPAD_RIGHT
+key KEYCODE_DPAD_RIGHT
+sleep 1
+shot 9-volume-up
+audio=$(adb logcat -d | grep "NtsTvAudio" | tail -n1 | sed -E 's/.*NtsTvAudio: //')
+echo "::notice title=Volume::${audio:-(no volume log line)}"
+check "Volume setting reaches the player" logged "NtsTvAudio: Volume +6 dB\|NtsTvAudio: Volume 6 dB"
+key KEYCODE_BACK
+
+log "Dark screen: the moon icon, next to the gear"
+key KEYCODE_DPAD_LEFT
+key KEYCODE_DPAD_CENTER
+sleep 3
+shot 10-dark
+check "Dark screen turns on" logged "NtsTvScreen: Dark screen on"
+keep=$(adb shell dumpsys window windows | grep -c "KEEP_SCREEN_ON")
+echo "::notice title=Screen::Windows holding the screen on while dark: $keep"
+check "Still playing while dark" wait_for_state 3 10
+key KEYCODE_DPAD_CENTER
+sleep 2
+shot 11-awake
+check "Any button wakes it" logged "NtsTvScreen: Dark screen off"
+
+log "Going home; playback should be able to carry on in the background"
 adb shell input keyevent KEYCODE_HOME
 sleep 10
 check "Still playing in the background" wait_for_state 3 20

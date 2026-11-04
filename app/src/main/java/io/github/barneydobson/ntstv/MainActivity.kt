@@ -6,13 +6,18 @@ import android.graphics.Shader
 import android.os.Build
 import android.os.Bundle
 import android.text.format.DateFormat
+import android.util.Log
 import android.view.KeyEvent
 import android.view.View
+import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -26,12 +31,14 @@ import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.google.common.util.concurrent.ListenableFuture
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import kotlin.random.Random
 
 class MainActivity : ComponentActivity() {
 
@@ -47,6 +54,24 @@ class MainActivity : ComponentActivity() {
     private lateinit var nowPlaying: TextView
     private lateinit var updateButton: TextView
     private lateinit var backdrop: ImageView
+
+    private lateinit var settings: AppSettings
+    private lateinit var content: ViewGroup
+    private lateinit var settingsButton: View
+    private lateinit var settingsOverlay: View
+    private lateinit var volumeRow: View
+    private lateinit var volumeValue: TextView
+    private lateinit var volumeBar: LinearLayout
+    private lateinit var volumeHint: TextView
+    private lateinit var darkValue: TextView
+    private lateinit var darkOverlay: View
+    private lateinit var darkMark: View
+    private lateinit var darkDot: View
+
+    private var darkMode = false
+    private var idleJob: Job? = null
+    private var driftJob: Job? = null
+    private var wasPlaying = false
 
     private var live: List<LiveChannel> = emptyList()
     private var mixtapes: List<Mixtape> = emptyList()
@@ -74,6 +99,7 @@ class MainActivity : ComponentActivity() {
         mixtapeStatus = findViewById(R.id.mixtapes_status)
         mixtapeCaption = findViewById(R.id.mixtape_caption)
         findViewById<TextView>(R.id.footer).text = getString(R.string.footer, BuildConfig.VERSION_NAME)
+        setUpSettingsAndDarkMode()
 
         cards = mapOf(
             "1" to ChannelCard("1", findViewById(R.id.channel1)),
@@ -130,13 +156,31 @@ class MainActivity : ComponentActivity() {
                 focusCurrentStation()
             }
         }, ContextCompat.getMainExecutor(this))
+        resetIdleTimer()
     }
 
     override fun onStop() {
+        exitDarkMode()
+        idleJob?.cancel()
         controllerFuture?.let { MediaController.releaseFuture(it) }
         controllerFuture = null
         controller = null
         super.onStop()
+    }
+
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        val code = event.keyCode
+        // In dark mode, any button (other than volume and media keys) just wakes the screen.
+        if (darkMode && code !in PASS_THROUGH_KEYS) {
+            if (event.action == KeyEvent.ACTION_UP) exitDarkMode()
+            return true
+        }
+        if (settingsOverlay.isVisible && code == KeyEvent.KEYCODE_BACK) {
+            if (event.action == KeyEvent.ACTION_UP) closeSettings()
+            return true
+        }
+        if (event.action == KeyEvent.ACTION_DOWN) resetIdleTimer()
+        return super.dispatchKeyEvent(event)
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
@@ -177,6 +221,190 @@ class MainActivity : ComponentActivity() {
         c.playWhenReady && c.playbackState != Player.STATE_READY -> PlayState.BUFFERING
         else -> PlayState.PAUSED
     }
+
+    private fun isPlayingNow(): Boolean = controller?.playWhenReady == true
+
+    // ---- Settings and dark mode ----
+
+    private fun setUpSettingsAndDarkMode() {
+        settings = AppSettings(this)
+        content = findViewById(R.id.content)
+        settingsButton = findViewById(R.id.settings_button)
+        settingsOverlay = findViewById(R.id.settings_overlay)
+        volumeRow = findViewById(R.id.volume_row)
+        volumeValue = findViewById(R.id.volume_value)
+        volumeBar = findViewById(R.id.volume_bar)
+        volumeHint = findViewById(R.id.volume_hint)
+        darkValue = findViewById(R.id.dark_value)
+        darkOverlay = findViewById(R.id.dark_overlay)
+        darkMark = findViewById(R.id.dark_mark)
+        darkDot = findViewById(R.id.dark_dot)
+
+        settingsButton.setOnClickListener { openSettings() }
+        findViewById<View>(R.id.dark_button).setOnClickListener { enterDarkMode() }
+        findViewById<TextView>(R.id.settings_footer).text =
+            getString(R.string.settings_footer, BuildConfig.VERSION_NAME)
+
+        val gap = dp(3)
+        repeat(AppSettings.VOLUME_DB.size) {
+            volumeBar.addView(
+                View(this),
+                LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f).apply {
+                    marginStart = gap
+                    marginEnd = gap
+                },
+            )
+        }
+
+        volumeRow.setOnKeyListener { _, keyCode, event ->
+            stepperKey(keyCode, event) { delta ->
+                settings.volumeStep += delta
+                renderSettings()
+            }
+        }
+        val darkRow = findViewById<View>(R.id.dark_row)
+        darkRow.setOnKeyListener { _, keyCode, event ->
+            stepperKey(keyCode, event) { delta -> changeDarkAfter(delta) }
+        }
+        darkRow.setOnClickListener { changeDarkAfter(1, wrap = true) }
+    }
+
+    /** Left/right on a settings row changes its value. */
+    private fun stepperKey(keyCode: Int, event: KeyEvent, change: (Int) -> Unit): Boolean {
+        val delta = when (keyCode) {
+            KeyEvent.KEYCODE_DPAD_LEFT -> -1
+            KeyEvent.KEYCODE_DPAD_RIGHT -> 1
+            else -> return false
+        }
+        if (event.action == KeyEvent.ACTION_DOWN) change(delta)
+        return true
+    }
+
+    private fun changeDarkAfter(delta: Int, wrap: Boolean = false) {
+        val count = AppSettings.DARK_AFTER_MINUTES.size
+        val next = settings.darkAfterStep + delta
+        settings.darkAfterStep = if (wrap) Math.floorMod(next, count) else next
+        renderSettings()
+        resetIdleTimer()
+        updateKeepScreenOn()
+    }
+
+    private fun openSettings() {
+        renderSettings()
+        settingsOverlay.isVisible = true
+        volumeRow.requestFocus()
+        // Keep the remote's focus inside the panel while it's open.
+        content.descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
+    }
+
+    private fun closeSettings() {
+        settingsOverlay.isVisible = false
+        content.descendantFocusability = ViewGroup.FOCUS_AFTER_DESCENDANTS
+        settingsButton.requestFocus()
+    }
+
+    private fun renderSettings() {
+        val db = settings.volumeDb
+        volumeValue.text = when {
+            db > 0 -> getString(R.string.volume_louder, db)
+            db < 0 -> getString(R.string.volume_quieter, -db)
+            else -> getString(R.string.volume_normal)
+        }
+        val normal = AppSettings.DEFAULT_VOLUME_STEP
+        for (i in 0 until volumeBar.childCount) {
+            val color = when {
+                i > settings.volumeStep -> 0x33FFFFFF
+                i > normal -> ContextCompat.getColor(this, R.color.accent)
+                else -> 0xFFFFFFFF.toInt()
+            }
+            volumeBar.getChildAt(i).setBackgroundColor(color)
+        }
+        volumeHint.setText(
+            if (PlaybackService.boostAvailable == false) R.string.volume_hint_no_boost else R.string.volume_hint,
+        )
+        val minutes = settings.darkAfterMinutes
+        darkValue.text = if (minutes == 0) {
+            getString(R.string.dark_after_off)
+        } else {
+            getString(R.string.dark_after_minutes, minutes)
+        }
+    }
+
+    private fun enterDarkMode() {
+        if (darkMode) return
+        darkMode = true
+        idleJob?.cancel()
+        if (settingsOverlay.isVisible) closeSettings()
+        darkOverlay.alpha = 0f
+        darkOverlay.isVisible = true
+        darkOverlay.animate().alpha(1f).setDuration(600).start()
+        darkOverlay.post { moveDarkMark(animate = false) }
+        // Move the mark now and then so nothing stays lit in one place (OLED burn-in).
+        driftJob = lifecycleScope.launch {
+            while (true) {
+                delay(DRIFT_INTERVAL_MS)
+                moveDarkMark(animate = true)
+            }
+        }
+        Log.i(SCREEN_TAG, "Dark screen on")
+        render()
+    }
+
+    private fun exitDarkMode() {
+        if (!darkMode) return
+        darkMode = false
+        driftJob?.cancel()
+        darkOverlay.animate().cancel()
+        darkOverlay.isVisible = false
+        Log.i(SCREEN_TAG, "Dark screen off")
+        updateKeepScreenOn()
+        resetIdleTimer()
+    }
+
+    private fun moveDarkMark(animate: Boolean) {
+        val margin = dp(48)
+        val maxX = (darkOverlay.width - darkMark.width - 2 * margin).coerceAtLeast(0)
+        val maxY = (darkOverlay.height - darkMark.height - 2 * margin).coerceAtLeast(0)
+        val x = (margin + Random.nextInt(maxX + 1)).toFloat()
+        val y = (margin + Random.nextInt(maxY + 1)).toFloat()
+        if (!animate) {
+            darkMark.translationX = x
+            darkMark.translationY = y
+            return
+        }
+        val shown = darkMark.alpha
+        darkMark.animate().alpha(0f).setDuration(1_000).withEndAction {
+            darkMark.translationX = x
+            darkMark.translationY = y
+            darkMark.animate().alpha(shown).setDuration(1_000).start()
+        }.start()
+    }
+
+    /** Goes dark after a few minutes without button presses, while something is playing. */
+    private fun resetIdleTimer() {
+        idleJob?.cancel()
+        val minutes = settings.darkAfterMinutes
+        if (darkMode || minutes <= 0) return
+        idleJob = lifecycleScope.launch {
+            delay(minutes * 60_000L)
+            if (isPlayingNow()) enterDarkMode()
+        }
+    }
+
+    /**
+     * While playing, keeps the TV's own screensaver from taking over: the app's dark screen
+     * replaces it. When nothing is playing, the TV behaves normally.
+     */
+    private fun updateKeepScreenOn() {
+        val keepOn = isPlayingNow() && (darkMode || settings.darkAfterMinutes > 0)
+        if (keepOn) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        } else {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
+    }
+
+    private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 
     // ---- Updates ----
 
@@ -279,10 +507,18 @@ class MainActivity : ComponentActivity() {
             )
             val what = listOfNotNull(metadata.station, metadata.title).joinToString(" — ")
             nowPlaying.text = getString(R.string.now_playing_line, label, what)
-            nowPlaying.isVisible = true
+            nowPlaying.isInvisible = false
         } else {
-            nowPlaying.isVisible = false
+            nowPlaying.isInvisible = true
         }
+
+        val playing = isPlayingNow()
+        if (playing != wasPlaying) {
+            wasPlaying = playing
+            resetIdleTimer()
+        }
+        updateKeepScreenOn()
+        darkDot.alpha = if (playing) 1f else 0.3f
 
         updateBackdrop()
     }
@@ -413,6 +649,22 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+
+private const val SCREEN_TAG = "NtsTvScreen"
+private const val DRIFT_INTERVAL_MS = 60_000L
+
+/** Keys that keep working normally while the screen is dark. */
+private val PASS_THROUGH_KEYS = setOf(
+    KeyEvent.KEYCODE_VOLUME_UP,
+    KeyEvent.KEYCODE_VOLUME_DOWN,
+    KeyEvent.KEYCODE_VOLUME_MUTE,
+    KeyEvent.KEYCODE_MUTE,
+    KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE,
+    KeyEvent.KEYCODE_MEDIA_PLAY,
+    KeyEvent.KEYCODE_MEDIA_PAUSE,
+    KeyEvent.KEYCODE_MEDIA_STOP,
+    KeyEvent.KEYCODE_HEADSETHOOK,
+)
 
 internal fun View.animateFocus(focused: Boolean, scale: Float) {
     val target = if (focused) scale else 1f

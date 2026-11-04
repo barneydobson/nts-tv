@@ -8,6 +8,8 @@ An unofficial player for [NTS Radio](https://www.nts.live), the London-based onl
 - **Infinite Mixtapes**: every NTS mixtape stream, in a row underneath.
 - **Remote-friendly**: move with the arrows and press **OK** to listen. Press OK again on the playing station to pause or resume.
 - **Keeps playing in the background** and while the screensaver is on. The system's media controls work too.
+- **Its own volume** (gear icon, top right): turn NTS down, or up to +12 dB louder than the stream, so it matches your other apps. It's remembered.
+- **Dark screen** (moon icon, top right): a black screen with a tiny NTS mark. While music plays it keeps the TV's own screensaver away, and by default it switches on by itself after 5 minutes without a button press (change or turn this off in settings). Any button brings the app back. The mark drifts around now and then so nothing burns into an OLED screen.
 - **Recovers from dropouts**: if the stream cuts out it reconnects by itself. After a long pause it rejoins the live broadcast rather than playing stale audio.
 
 > Not affiliated with or endorsed by NTS. It plays NTS's public streams and reads its public schedule API. If you enjoy the station, [support NTS](https://www.nts.live/supporters).

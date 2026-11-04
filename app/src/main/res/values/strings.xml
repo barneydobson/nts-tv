@@ -31,5 +31,19 @@
     <string name="update_installing">Updating to v%1$s… open NTS Radio again when it closes</string>
     <string name="update_failed">Update to v%1$s didn\'t install · press to retry</string>
 
+    <string name="settings">Settings</string>
+    <string name="dark_mode">Dark screen</string>
+    <string name="volume">Volume</string>
+    <string name="volume_normal">‹  Normal  ›</string>
+    <string name="volume_louder">‹  +%1$d dB louder  ›</string>
+    <string name="volume_quieter">‹  %1$d dB quieter  ›</string>
+    <string name="volume_hint">Use ‹ › to adjust. Saved for next time.</string>
+    <string name="volume_hint_no_boost">This TV doesn\'t support boosting above Normal.</string>
+    <string name="dark_after">Go dark while playing</string>
+    <string name="dark_after_off">‹  Never  ›</string>
+    <string name="dark_after_minutes">‹  After %1$d min  ›</string>
+    <string name="dark_after_hint">Instead of the TV\'s screensaver. Any button wakes it up.</string>
+    <string name="settings_footer">NTS Radio v%1$s · Back to close</string>
+
     <string name="footer">Unofficial app · not affiliated with NTS · v%1$s</string>
 </resources>

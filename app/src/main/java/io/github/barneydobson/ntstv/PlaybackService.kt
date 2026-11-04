@@ -2,8 +2,12 @@ package io.github.barneydobson.ntstv
 
 import android.app.PendingIntent
 import android.content.Intent
+import android.content.SharedPreferences
+import android.media.AudioManager
+import android.media.audiofx.LoudnessEnhancer
 import android.net.Uri
 import android.os.SystemClock
+import android.util.Log
 import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
@@ -28,6 +32,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import java.time.Duration
 import java.time.Instant
+import kotlin.math.pow
 
 /**
  * Owns the player so audio keeps going when the app is in the background or the TV's
@@ -45,6 +50,12 @@ class PlaybackService : MediaSessionService() {
     private var retryAttempt = 0
     private var currentMediaId: String? = null
     private var pausedAt = 0L
+
+    private lateinit var settings: AppSettings
+    private var loudness: LoudnessEnhancer? = null
+    private val settingsListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+        if (key == AppSettings.KEY_VOLUME) applyVolume()
+    }
 
     @OptIn(UnstableApi::class)
     override fun onCreate() {
@@ -70,6 +81,22 @@ class PlaybackService : MediaSessionService() {
             .build()
         player.addListener(PlayerListener())
 
+        // A fixed audio session lets the volume boost (LoudnessEnhancer) stay attached.
+        settings = AppSettings(this)
+        val audioSessionId = getSystemService(AudioManager::class.java).generateAudioSessionId()
+        if (audioSessionId != AudioManager.ERROR) {
+            player.setAudioSessionId(audioSessionId)
+            loudness = try {
+                LoudnessEnhancer(audioSessionId)
+            } catch (e: Exception) {
+                Log.w(AUDIO_TAG, "Volume boost isn't available on this device: ${e.message}")
+                null
+            }
+        }
+        boostAvailable = loudness != null
+        applyVolume()
+        settings.onChange(settingsListener)
+
         val openApp = PendingIntent.getActivity(
             this,
             0,
@@ -91,11 +118,34 @@ class PlaybackService : MediaSessionService() {
     }
 
     override fun onDestroy() {
+        settings.removeOnChange(settingsListener)
+        loudness?.release()
+        loudness = null
         scope.cancel()
         session?.release()
         session = null
         player.release()
         super.onDestroy()
+    }
+
+    /** Turns the stream down with the player's volume, or up with the loudness enhancer. */
+    private fun applyVolume() {
+        val db = settings.volumeDb
+        val boost = loudness
+        try {
+            if (db > 0 && boost != null) {
+                player.volume = 1f
+                boost.setTargetGain(db * 100) // millibels
+                boost.setEnabled(true)
+                Log.i(AUDIO_TAG, "Volume +$db dB (boosted)")
+            } else {
+                boost?.setEnabled(false)
+                player.volume = if (db < 0) 10f.pow(db / 20f) else 1f
+                Log.i(AUDIO_TAG, "Volume ${if (db == 0) "normal" else "$db dB"}")
+            }
+        } catch (e: Exception) {
+            Log.w(AUDIO_TAG, "Couldn't set the volume: ${e.message}")
+        }
     }
 
     private inner class PlayerListener : Player.Listener {
@@ -214,11 +264,17 @@ class PlaybackService : MediaSessionService() {
         return (untilEnd ?: LIVE_CHECK_MS).coerceIn(30_000L, LIVE_CHECK_MS)
     }
 
-    private companion object {
-        const val MAX_RETRIES = 12
-        const val RESYNC_AFTER_PAUSE_MS = 30_000L
-        const val IDLE_CHECK_MS = 60_000L
-        const val LIVE_CHECK_MS = 5 * 60_000L
-        const val RETRY_FETCH_MS = 30_000L
+    companion object {
+        private const val MAX_RETRIES = 12
+        private const val RESYNC_AFTER_PAUSE_MS = 30_000L
+        private const val IDLE_CHECK_MS = 60_000L
+        private const val LIVE_CHECK_MS = 5 * 60_000L
+        private const val RETRY_FETCH_MS = 30_000L
+        private const val AUDIO_TAG = "NtsTvAudio"
+
+        /** Whether volumes above "normal" can be applied (null until playback has started once). */
+        @Volatile
+        var boostAvailable: Boolean? = null
+            private set
     }
 }
