@@ -281,7 +281,10 @@ class MainActivity : ComponentActivity() {
         card2.nextFocusUpId = R.id.settings_button
         card2.nextFocusRightId = R.id.channel2 // don't jump down into the mixtapes row
         findViewById<View>(R.id.dark_button).nextFocusDownId = R.id.channel2
-        findViewById<View>(R.id.settings_button).nextFocusDownId = R.id.channel2
+        findViewById<View>(R.id.settings_button).apply {
+            nextFocusDownId = R.id.channel2
+            nextFocusRightId = R.id.settings_button // nothing to its right; don't drop into the tiles
+        }
         updateButton.nextFocusDownId = R.id.channel1
         window.decorView.viewTreeObserver.addOnGlobalFocusChangeListener { _, now ->
             val name = now?.id?.takeIf { it != View.NO_ID }?.let {

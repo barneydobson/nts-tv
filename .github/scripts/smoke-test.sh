@@ -88,7 +88,6 @@ logged() { adb logcat -d | grep -q "$1"; }
 log "Settings: the gear icon is top right; turn the volume up two steps"
 key KEYCODE_DPAD_UP
 key KEYCODE_DPAD_RIGHT
-key KEYCODE_DPAD_RIGHT
 shot 7-header-focus
 focus=$(adb logcat -d | grep "NtsTvFocus" | tail -n1 | sed -E 's/.*NtsTvFocus: //')
 echo "::notice title=Focus::After up, right: ${focus:-(unknown)}"
