@@ -1,0 +1,36 @@
+MEDIA SESSION SERVICE (dumpsys media_session)
+
+7 sessions listeners.
+Global priority session is null
+User Records:
+Record for full_user=0
+  Volume key long-press listener: null
+  Volume key long-press listener package: 
+  Media key listener: null
+  Media key listener package: 
+  OnMediaKeyEventDispatchedListener: added 0 listener(s)
+  OnMediaKeyEventSessionChangedListener: added 1 listener(s)
+    from com.android.bluetooth
+  Last MediaButtonReceiver: null
+  Media button session is io.github.barneydobson.ntstv/androidx.media3.session.id. (userId=0)
+  Sessions Stack - have 1 sessions:
+    androidx.media3.session.id. io.github.barneydobson.ntstv/androidx.media3.session.id. (userId=0)
+      ownerPid=2839, ownerUid=10080, userId=0
+      package=io.github.barneydobson.ntstv
+      launchIntent=PendingIntent{b1c592c: PendingIntentRecord{ebf9479 io.github.barneydobson.ntstv startActivity (allowlist: 4f1beea:+30s0ms/0/NOTIFICATION_SERVICE/NotificationManagerService)}}
+      mediaButtonReceiver=null
+      active=true
+      flags=7
+      rating type=0
+      controllers: 5
+      state=PlaybackState {state=3, position=8813, buffered position=11728, speed=1.0, updated=79353, actions=7339655, custom actions=[], active item id=0, error=null}
+      audioAttrs=AudioAttributes: usage=USAGE_MEDIA content=CONTENT_TYPE_MUSIC flags=0x800 tags= bundle=null
+      volumeType=1, controlType=2, max=0, current=0
+      metadata: size=10, description=PRECIOUS METALS W/ ENDGAME & DAYOUNG, NTS 1 · London, null
+      queueTitle=null, size=1
+Audio playback (lastly played comes first)
+  uid=10080 packages=io.github.barneydobson.ntstv 
+Media session config:
+  media_button_receiver_fgs_allowlist_duration_ms: [cur: 10000, def: 10000]
+  media_session_calback_fgs_allowlist_duration_ms: [cur: 10000, def: 10000]
+  media_session_callback_fgs_while_in_use_temp_allow_duration_ms: [cur: 10000, def: 10000]

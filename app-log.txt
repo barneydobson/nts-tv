@@ -1,0 +1,122 @@
+--------- beginning of main
+11-04 21:25:32.273  2839  2839 W neydobson.ntst: Unexpected CPU variant for X86 using defaults: x86
+11-04 21:25:32.274  2839  2839 E neydobson.ntst: Not starting debugger since process cannot load the jdwp agent.
+11-04 21:25:32.282  2839  2839 D CompatibilityChangeReporter: Compat change id reported: 171979766; UID 10080; state: ENABLED
+11-04 21:25:32.332  2839  2839 V GraphicsEnvironment: ANGLE Developer option for 'io.github.barneydobson.ntstv' set to: 'default'
+11-04 21:25:32.332  2839  2839 V GraphicsEnvironment: Neither updatable production driver nor prerelease driver is supported.
+11-04 21:25:32.356  2839  2839 D NetworkSecurityConfig: Using Network Security Config from resource network_security_config debugBuild: false
+11-04 21:25:32.357  2839  2839 D NetworkSecurityConfig: Using Network Security Config from resource network_security_config debugBuild: false
+11-04 21:25:32.431  2839  2860 D libEGL  : loaded /vendor/lib/egl/libEGL_emulation.so
+11-04 21:25:32.435  2839  2860 D libEGL  : loaded /vendor/lib/egl/libGLESv1_CM_emulation.so
+11-04 21:25:32.436  2839  2860 D libEGL  : loaded /vendor/lib/egl/libGLESv2_emulation.so
+11-04 21:25:32.632  2839  2839 I MediaController: Init a782cfd [AndroidXMedia3/1.5.1] [generic_x86, AOSP TV on x86, Google, 31]
+11-04 21:25:32.779  2839  2858 D HostConnection: createUnique: call
+11-04 21:25:32.780  2839  2858 D HostConnection: HostConnection::get() New Host Connection established 0xe79c6f30, tid 2858
+11-04 21:25:32.833  2839  2858 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_vulkan_queue_submit_with_commands ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_color_transform GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
+11-04 21:25:32.950  2839  2858 W OpenGLRenderer: Failed to initialize 101010-2 format, error = EGL_SUCCESS
+11-04 21:25:32.957  2839  2858 D EGL_emulation: eglCreateContext: 0xe79c39d0: maj 3 min 0 rcv 3
+11-04 21:25:33.025  2839  2858 D EGL_emulation: eglMakeCurrent: 0xe79c39d0: ver 3 0 (tinfo 0xe5428040) (first time)
+11-04 21:25:33.067  2839  2858 I Gralloc4: mapper 4.x is not supported
+11-04 21:25:33.075  2839  2858 D HostConnection: createUnique: call
+11-04 21:25:33.075  2839  2858 D HostConnection: HostConnection::get() New Host Connection established 0xe79c5c60, tid 2858
+11-04 21:25:33.075  2839  2858 D goldfish-address-space: allocate: Ask for block of size 0x100
+11-04 21:25:33.075  2839  2858 D goldfish-address-space: allocate: ioctl allocate returned offset 0x3f7ffe000 size 0x2000
+11-04 21:25:33.113  2839  2858 W Gralloc4: allocator 4.x is not supported
+11-04 21:25:33.137  2839  2858 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_vulkan_queue_submit_with_commands ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_color_transform GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
+11-04 21:25:33.317  2839  2871 I NtsTvUpdater: Up to date (installed 1.2.4, latest release 1.2.3)
+11-04 21:25:33.878  2839  2853 I OpenGLRenderer: Davey! duration=1466ms; Flags=1, FrameTimelineVsyncId=865, IntendedVsync=45947197045, Vsync=46263863699, InputEventId=0, HandleInputStart=46278175803, AnimationStart=46278176394, PerformTraversalsStart=46278268076, DrawStart=46697289725, FrameDeadline=45963863711, FrameInterval=46278167227, FrameStartTime=16666666, SyncQueued=46698157364, SyncStart=46698402171, IssueDrawCommandsStart=46724959268, SwapBuffers=47221326337, FrameCompleted=47414016007, DequeueBufferDuration=3627, QueueBufferDuration=1506601, GpuCompleted=47414016007, SwapBuffersCompleted=47411729565, DisplayPresentTime=0, 
+11-04 21:25:33.879  2839  2839 I ExoPlayerImpl: Init d3ae647 [AndroidXMedia3/1.5.1] [generic_x86, AOSP TV on x86, Google, 31]
+11-04 21:25:33.943  2839  2839 W libc    : Access denied finding property "vendor.display-size"
+11-04 21:25:34.055  2839  2839 I NtsTvAudio: Volume normal
+11-04 21:25:34.055  2839  2839 D CompatibilityChangeReporter: Compat change id reported: 160794467; UID 10080; state: ENABLED
+11-04 21:25:34.056  2839  2839 I MediaSessionImpl: Init 498573f [AndroidXMedia3/1.5.1] [generic_x86, AOSP TV on x86, Google, 31]
+11-04 21:25:34.078  2839  2839 W MediaSessionCompat: Couldn't find a unique registered media button receiver in the given context.
+11-04 21:25:34.183  2839  2839 I MediaController: Init 19b1f34 [AndroidXMedia3/1.5.1] [generic_x86, AOSP TV on x86, Google, 31]
+11-04 21:25:34.630  2839  2849 I neydobson.ntst: Background young concurrent copying GC freed 58364(2979KB) AllocSpace objects, 52(1252KB) LOS objects, 83% free, 4697KB/28MB, paused 35us,126us total 357.130ms
+11-04 21:25:34.817  2839  3042 D HostConnection: createUnique: call
+11-04 21:25:34.818  2839  3042 D HostConnection: HostConnection::get() New Host Connection established 0xe79ce010, tid 3042
+11-04 21:25:34.840  2839  3042 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_vulkan_queue_submit_with_commands ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_color_transform GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
+11-04 21:25:34.840  2839  3042 W OpenGLRenderer: Failed to initialize 101010-2 format, error = EGL_SUCCESS
+11-04 21:25:34.855  2839  3042 D EGL_emulation: eglCreateContext: 0xe79d0690: maj 3 min 0 rcv 3
+11-04 21:25:34.877  2839  3042 D EGL_emulation: eglMakeCurrent: 0xe79d0690: ver 3 0 (tinfo 0xe5428080) (first time)
+11-04 21:25:34.877  2839  2998 D HostConnection: createUnique: call
+11-04 21:25:34.878  2839  2998 D HostConnection: HostConnection::get() New Host Connection established 0xe79c7da0, tid 2998
+11-04 21:25:34.880  2839  2998 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_vulkan_queue_submit_with_commands ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_color_transform GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
+11-04 21:25:34.892  2839  3004 D HostConnection: createUnique: call
+11-04 21:25:34.892  2839  3004 D HostConnection: HostConnection::get() New Host Connection established 0xe79dc240, tid 3004
+11-04 21:25:34.894  2839  3004 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_vulkan_queue_submit_with_commands ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_color_transform GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
+11-04 21:25:34.895  2839  2997 D HostConnection: createUnique: call
+11-04 21:25:34.895  2839  3002 D HostConnection: createUnique: call
+11-04 21:25:34.895  2839  2997 D HostConnection: HostConnection::get() New Host Connection established 0xe79c83c0, tid 2997
+11-04 21:25:34.895  2839  3002 D HostConnection: HostConnection::get() New Host Connection established 0xe79dcf60, tid 3002
+11-04 21:25:34.897  2839  3002 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_vulkan_queue_submit_with_commands ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_color_transform GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
+11-04 21:25:34.900  2839  2997 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_vulkan_queue_submit_with_commands ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_color_transform GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
+11-04 21:25:34.916  2839  2872 D HostConnection: createUnique: call
+11-04 21:25:34.917  2839  2872 D HostConnection: HostConnection::get() New Host Connection established 0xe79dba60, tid 2872
+11-04 21:25:34.919  2839  2872 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_vulkan_queue_submit_with_commands ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_color_transform GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
+11-04 21:25:34.928  2839  2869 D HostConnection: createUnique: call
+11-04 21:25:34.929  2839  2869 D HostConnection: HostConnection::get() New Host Connection established 0xe79db980, tid 2869
+11-04 21:25:34.931  2839  2869 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_vulkan_queue_submit_with_commands ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_color_transform GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
+11-04 21:25:36.136  2839  2858 D EGL_emulation: app_time_stats: avg=756.64ms min=61.46ms max=1568.44ms count=3
+11-04 21:25:36.137  2839  2839 I Choreographer: Skipped 69 frames!  The application may be doing too much work on its main thread.
+11-04 21:25:36.247  2839  2950 I OpenGLRenderer: Davey! duration=1184ms; Flags=0, FrameTimelineVsyncId=962, IntendedVsync=48497208008, Vsync=48497208008, InputEventId=0, HandleInputStart=48503712910, AnimationStart=48503713681, PerformTraversalsStart=48503713911, DrawStart=48503780505, FrameDeadline=48513874674, FrameInterval=48503709633, FrameStartTime=16666666, SyncQueued=48503936877, SyncStart=48503951675, IssueDrawCommandsStart=48504021264, SwapBuffers=49587072703, FrameCompleted=49681728023, DequeueBufferDuration=4368, QueueBufferDuration=377795, GpuCompleted=49681604312, SwapBuffersCompleted=49681728023, DisplayPresentTime=0, 
+11-04 21:25:36.587  2839  2854 I OpenGLRenderer: Davey! duration=1489ms; Flags=0, FrameTimelineVsyncId=964, IntendedVsync=48530541336, Vsync=49680541290, InputEventId=0, HandleInputStart=49681911932, AnimationStart=49681912383, PerformTraversalsStart=49681912623, DrawStart=49681943761, FrameDeadline=49830541286, FrameInterval=49681896002, FrameStartTime=16666666, SyncQueued=49682058566, SyncStart=49792761116, IssueDrawCommandsStart=49792847096, SwapBuffers=50027534088, FrameCompleted=50130664301, DequeueBufferDuration=3527, QueueBufferDuration=265906, GpuCompleted=50130664301, SwapBuffersCompleted=50119346361, DisplayPresentTime=0, 
+11-04 21:25:37.857  2839  3132 D ProfileInstaller: Installing profile for io.github.barneydobson.ntstv
+11-04 21:25:54.949  2839  2858 D EGL_emulation: app_time_stats: avg=3134.12ms min=52.68ms max=17960.85ms count=6
+11-04 21:25:56.653  2839  2954 I VideoCapabilities: Unsupported profile 4 for video/mp4v-es
+11-04 21:25:56.663  2839  2954 I DMCodecAdapterFactory: Creating an asynchronous MediaCodec adapter for track type audio
+11-04 21:25:56.715  2839  2858 D EGL_emulation: app_time_stats: avg=588.52ms min=76.71ms max=1582.11ms count=3
+11-04 21:25:56.753  2839  3589 I OMXClient: IOmx service obtained
+11-04 21:25:56.772  2839  3589 I MediaCodec: MediaCodec will operate in async mode
+11-04 21:25:56.773  2839  3589 I ACodec  : codec does not support config priority (err -2147483648)
+11-04 21:25:56.773  2839  2954 D MediaCodec: keep callback message for reclaim
+11-04 21:26:00.073  2839  2858 D EGL_emulation: app_time_stats: avg=1119.53ms min=58.40ms max=3177.39ms count=3
+11-04 21:26:08.232  2839  3042 D HostConnection: createUnique: call
+11-04 21:26:08.232  2839  3042 D HostConnection: HostConnection::get() New Host Connection established 0xe79df650, tid 3042
+11-04 21:26:08.238  2839  3042 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_vulkan_queue_submit_with_commands ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_color_transform GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
+11-04 21:26:08.239  2839  3042 W OpenGLRenderer: Failed to initialize 101010-2 format, error = EGL_SUCCESS
+11-04 21:26:08.239  2839  3042 D EGL_emulation: eglCreateContext: 0xe79debd0: maj 3 min 0 rcv 3
+11-04 21:26:08.240  2839  3042 D EGL_emulation: eglMakeCurrent: 0xe79debd0: ver 3 0 (tinfo 0xe5428080) (first time)
+11-04 21:26:08.286  2839  2858 D EGL_emulation: app_time_stats: avg=8212.58ms min=8212.58ms max=8212.58ms count=1
+11-04 21:26:09.351  2839  2858 D EGL_emulation: app_time_stats: avg=116.24ms min=98.27ms max=134.68ms count=9
+11-04 21:26:10.929  2839  2954 D MediaCodec: keep callback message for reclaim
+11-04 21:26:11.029  2839  2858 D EGL_emulation: app_time_stats: avg=1661.07ms min=1661.07ms max=1661.07ms count=1
+11-04 21:26:11.893  2839  2954 D MediaCodec: keep callback message for reclaim
+11-04 21:26:12.105  2839  2858 D EGL_emulation: app_time_stats: avg=215.22ms min=62.65ms max=789.55ms count=5
+11-04 21:26:24.148  2839  2839 D NtsTvFocus: Focus: channel1
+11-04 21:26:24.193  2839  2858 D EGL_emulation: app_time_stats: avg=6043.75ms min=204.08ms max=11883.43ms count=2
+11-04 21:26:24.201  2839  3042 D HostConnection: createUnique: call
+11-04 21:26:24.202  2839  3042 D HostConnection: HostConnection::get() New Host Connection established 0xe79dfb90, tid 3042
+11-04 21:26:24.210  2839  3042 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_vulkan_queue_submit_with_commands ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_color_transform GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
+11-04 21:26:24.212  2839  3042 W OpenGLRenderer: Failed to initialize 101010-2 format, error = EGL_SUCCESS
+11-04 21:26:24.216  2839  3042 D EGL_emulation: eglCreateContext: 0xe79dea10: maj 3 min 0 rcv 3
+11-04 21:26:24.219  2839  3042 D EGL_emulation: eglMakeCurrent: 0xe79dea10: ver 3 0 (tinfo 0xe5428080) (first time)
+11-04 21:26:25.270  2839  2858 D EGL_emulation: app_time_stats: avg=117.56ms min=92.33ms max=143.54ms count=9
+11-04 21:26:25.717  2839  2954 D MediaCodec: keep callback message for reclaim
+11-04 21:26:26.465  2839  2954 D MediaCodec: keep callback message for reclaim
+11-04 21:26:26.603  2839  2858 D EGL_emulation: app_time_stats: avg=333.20ms min=64.16ms max=663.61ms count=4
+11-04 21:26:29.752  2839  2954 D AudioTrack: getTimestamp_l(18): device stall time corrected using current time 103297053099
+11-04 21:26:29.819  2839  2858 D EGL_emulation: app_time_stats: avg=804.05ms min=95.77ms max=2433.36ms count=4
+11-04 21:26:31.320  2839  2839 D NtsTvFocus: Focus: dark_button
+11-04 21:26:31.376  2839  2858 D EGL_emulation: app_time_stats: avg=1556.89ms min=1556.89ms max=1556.89ms count=1
+11-04 21:26:32.864  2839  2839 D NtsTvFocus: Focus: settings_button
+11-04 21:26:33.006  2839  2858 D EGL_emulation: app_time_stats: avg=1626.90ms min=1626.90ms max=1626.90ms count=1
+11-04 21:26:34.211  2839  2858 D EGL_emulation: app_time_stats: avg=1204.88ms min=1204.88ms max=1204.88ms count=1
+11-04 21:26:35.723  2839  2839 D NtsTvFocus: Focus: volume_row
+11-04 21:26:35.797  2839  2858 D EGL_emulation: app_time_stats: avg=1586.49ms min=1586.49ms max=1586.49ms count=1
+11-04 21:26:35.939  2839  3972 I AssistStructure: Flattened final assist data: 9008 bytes, containing 1 windows, 115 views
+11-04 21:26:36.509  2839  3972 I AssistStructure: Flattened final assist data: 9008 bytes, containing 1 windows, 115 views
+11-04 21:26:38.802  2839  2839 I NtsTvAudio: Volume +3 dB (boosted)
+11-04 21:26:38.863  2839  2858 D EGL_emulation: app_time_stats: avg=3065.22ms min=3065.22ms max=3065.22ms count=1
+11-04 21:26:40.323  2839  2839 I NtsTvAudio: Volume +6 dB (boosted)
+11-04 21:26:40.382  2839  2858 D EGL_emulation: app_time_stats: avg=1519.45ms min=1519.45ms max=1519.45ms count=1
+11-04 21:26:43.955  2839  2839 D NtsTvFocus: Focus: settings_button
+11-04 21:26:44.008  2839  2858 D EGL_emulation: app_time_stats: avg=3625.89ms min=3625.89ms max=3625.89ms count=1
+11-04 21:26:45.475  2839  2839 D NtsTvFocus: Focus: dark_button
+11-04 21:26:45.492  2839  2858 D EGL_emulation: app_time_stats: avg=1483.08ms min=1483.08ms max=1483.08ms count=1
+11-04 21:26:46.996  2839  2839 I NtsTvScreen: Dark screen on
+11-04 21:26:47.059  2839  2858 D EGL_emulation: app_time_stats: avg=1567.63ms min=1567.63ms max=1567.63ms count=1
+11-04 21:26:52.014  2839  2839 I NtsTvScreen: Dark screen off
+11-04 21:26:52.093  2839  2858 D EGL_emulation: app_time_stats: avg=2511.30ms min=43.42ms max=4979.18ms count=2
+11-04 21:26:56.499  2839  2858 D EGL_emulation: app_time_stats: avg=4406.58ms min=4406.58ms max=4406.58ms count=1
+11-04 21:26:56.651  2839  2839 I MediaController: Release a782cfd [AndroidXMedia3/1.5.1] [generic_x86, AOSP TV on x86, Google, 31] [media3.common, media3.session, media3.exoplayer, media3.decoder, media3.datasource, media3.extractor]
