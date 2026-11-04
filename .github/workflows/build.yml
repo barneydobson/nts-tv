@@ -371,7 +371,7 @@ jobs:
           [ -d update-output ] || { echo "No update-test output (test was skipped)"; exit 0; }
           mkdir publish
           cp update-output/*.png publish/ 2>/dev/null || true
-          grep -h "NtsTvUpdater\|PackageInstaller\|ntstv" update-output/logcat*.txt > publish/app-log.txt 2>/dev/null || true
+          grep -hi "NtsTv\|PackageInstaller\|ntstv\|settings" update-output/logcat*.txt > publish/app-log.txt 2>/dev/null || true
           cd publish
           git init -q -b update-test-results
           git config user.name "github-actions[bot]"

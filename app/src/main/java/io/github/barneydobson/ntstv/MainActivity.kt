@@ -74,6 +74,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var darkDot: View
 
     private var darkMode = false
+    private var lastUpdateState: UpdateState = UpdateState.None
     private var idleJob: Job? = null
     private var driftJob: Job? = null
     private var wasPlaying = false
@@ -522,15 +523,17 @@ class MainActivity : ComponentActivity() {
             is UpdateState.Failed -> getString(R.string.update_failed, state.update.version) to true
             is UpdateState.NeedsConfirmation -> null to false
         }
-        val wasVisible = updateButton.isVisible
         updateButton.isVisible = text != null
         updateButton.text = text
         updateButton.isFocusable = actionable
         updateButton.isClickable = actionable
         // Make the one-off permission step easy to find with the remote.
-        if (state is UpdateState.NeedsPermission && !wasVisible && !darkMode && !settingsOverlay.isVisible) {
-            updateButton.requestFocus()
+        val newlyNeedsPermission = state is UpdateState.NeedsPermission &&
+            lastUpdateState !is UpdateState.NeedsPermission
+        if (newlyNeedsPermission && !darkMode && !settingsOverlay.isVisible) {
+            updateButton.post { updateButton.requestFocus() }
         }
+        lastUpdateState = state
     }
 
     // ---- Data ----

@@ -48,7 +48,16 @@ if printf '%s\n' "1.2.1" "$before" | sort -V -C; then
   check "Asks for the install permission" wait_logged "Install permission needed" 90
   sleep 2
   shot 1-allow-updates
-  key KEYCODE_DPAD_CENTER   # the focused "Allow updates" button
+  # The "Allow updates" button should have focus; if not, go to it like a person would
+  # (up to the header icons, then left).
+  if ! adb logcat -d | grep "NtsTvFocus" | tail -n1 | grep -q "update_button"; then
+    echo "::notice title=Update test::Allow-updates button wasn't focused; navigating to it"
+    key KEYCODE_DPAD_UP
+    key KEYCODE_DPAD_LEFT
+  fi
+  focus=$(adb logcat -d | grep "NtsTvFocus" | tail -n1 | sed -E 's/.*NtsTvFocus: //')
+  echo "::notice title=Update test::Focus before pressing OK: ${focus:-unknown}"
+  key KEYCODE_DPAD_CENTER
   sleep 3
   shot 2-settings
   check "Opens the setting" sh -c "adb shell dumpsys activity activities | grep -m1 -E 'mResumedActivity|topResumedActivity' | grep -qi settings"
